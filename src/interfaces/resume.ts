@@ -1,0 +1,99 @@
+// types/resume.ts
+export interface PersonalInfo {
+	fullName: string;
+	email: string;
+	phone: string;
+	location: string;
+	website?: string; // Generic website/portfolio
+	links: Array<{
+		label: string;
+		url: string;
+	}>;
+	summary: string;
+}
+
+export interface Experience {
+	id: string;
+	jobTitle: string;
+	company: string;
+	location: string;
+	startDate: Date;
+	endDate?: Date;
+	currentlyWorking: boolean;
+	description?: string;
+	achievements: string[];
+	skillsUsed: string[];
+}
+
+export interface Education {
+	id: string;
+	degree: string;
+	institution: string;
+	location: string;
+	startDate: Date;
+	endDate?: Date;
+	currentlyStudying: boolean;
+	gradeType: "gpa" | "cgpa" | "percentage" | "grade" | "none";
+	gradeValue: string;
+	achievements: string[];
+	coursework: string[];
+}
+
+export interface Skills {
+	technical: string[];
+	soft: string[];
+	languages: Array<{
+		language: string;
+		proficiency: "Native" | "Fluent" | "Professional" | "Basic";
+	}>;
+}
+
+export interface Project {
+	id: string;
+	name: string;
+	description?: string;
+	technologies: string[];
+	projectUrl: string;
+	githubUrl: string;
+	startDate: Date;
+	endDate?: Date;
+	currentlyWorking: boolean;
+	highlights: string[];
+}
+
+export interface Certification {
+	id: string;
+	name: string;
+	issuingOrganization: string;
+	issueDate: Date;
+	expirationDate?: Date;
+	credentialUrl: string;
+	doesNotExpire: boolean;
+}
+
+export interface Achievement {
+	id: string;
+	title: string;
+	issuer: string;
+	date: Date;
+	description: string;
+}
+
+export interface ResumeData {
+	name: string; // Add this
+	description: string; // Add this
+	personalInfo: PersonalInfo;
+	experience: Experience[];
+	education: Education[];
+	skills: Skills;
+	projects: Project[];
+	certifications: Certification[];
+	achievements: Achievement[];
+}
+
+export type Step = {
+	id: number;
+	title: string;
+	description: string;
+	component: React.ComponentType;
+};
