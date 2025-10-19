@@ -15,203 +15,27 @@ import React, { createContext, useContext, useReducer, ReactNode } from "react";
 
 // Initial state - PREFILLED WITH SAMPLE DATA FOR TESTING
 const initialResumeData: ResumeData = {
-	name: "Senior Full Stack Developer Resume",
-	description:
-		"Professional resume showcasing full-stack development expertise",
+	name: "",
+	description: "",
 	personalInfo: {
-		fullName: "John Doe",
-		email: "john.doe@example.com",
-		phone: "+1 (555) 123-4567",
-		location: "San Francisco, CA",
-		website: "https://johndoe.dev",
-		links: [
-			{ label: "LinkedIn", url: "https://linkedin.com/in/johndoe" },
-			{ label: "GitHub", url: "https://github.com/johndoe" },
-		],
-		summary:
-			"Experienced full-stack developer with 5+ years of expertise in React, Node.js, and cloud technologies. Passionate about building scalable applications and leading technical teams to deliver high-quality solutions.",
+		fullName: "",
+		email: "",
+		phone: "",
+		location: "",
+		website: "",
+		links: [],
+		summary: "",
 	},
-	experience: [
-		{
-			id: "exp-1",
-			jobTitle: "Senior Software Engineer",
-			company: "Tech Corp Inc.",
-			location: "San Francisco, CA",
-			startDate: new Date("2021-06-01"),
-			endDate: undefined,
-			currentlyWorking: true,
-			description:
-				"Leading development of microservices architecture and mentoring junior developers",
-			achievements: [
-				"Increased application performance by 40% through optimization",
-				"Led team of 5 developers to deliver critical features",
-				"Reduced deployment time from 2 hours to 15 minutes",
-			],
-			skillsUsed: [
-				"React",
-				"Node.js",
-				"TypeScript",
-				"AWS",
-				"Docker",
-				"MongoDB",
-			],
-		},
-		{
-			id: "exp-2",
-			jobTitle: "Full Stack Developer",
-			company: "StartupXYZ",
-			location: "Remote",
-			startDate: new Date("2019-03-01"),
-			endDate: new Date("2021-05-31"),
-			currentlyWorking: false,
-			description: "Developed and maintained multiple web applications",
-			achievements: [
-				"Built e-commerce platform handling 10k daily users",
-				"Implemented CI/CD pipeline reducing bugs by 60%",
-			],
-			skillsUsed: ["React", "Express", "PostgreSQL", "Redis"],
-		},
-	],
-	education: [
-		{
-			id: "edu-1",
-			degree: "Bachelor of Science in Computer Science",
-			institution: "University of California, Berkeley",
-			location: "Berkeley, CA",
-			startDate: new Date("2015-09-01"),
-			endDate: new Date("2019-05-31"),
-			currentlyStudying: false,
-			gradeType: "gpa",
-			gradeValue: "3.8",
-			achievements: ["Dean's List", "Summa Cum Laude"],
-			coursework: [
-				"Data Structures",
-				"Algorithms",
-				"Database Systems",
-				"Web Development",
-			],
-		},
-		{
-			id: "edu-2",
-			degree: "Master of Science in Software Engineering",
-			institution: "Stanford University",
-			location: "Stanford, CA",
-			startDate: new Date("2019-09-01"),
-			endDate: new Date("2021-06-30"),
-			currentlyStudying: false,
-			gradeType: "cgpa",
-			gradeValue: "9.2",
-			achievements: ["Research Assistant", "Graduate Teaching Assistant"],
-			coursework: [
-				"Advanced Algorithms",
-				"Machine Learning",
-				"Distributed Systems",
-				"Cloud Computing",
-			],
-		},
-	],
+	experience: [],
+	education:[],
 	skills: {
-		technical: [
-			"React",
-			"Node.js",
-			"TypeScript",
-			"Python",
-			"AWS",
-			"Docker",
-			"MongoDB",
-			"PostgreSQL",
-		],
-		soft: [
-			"Leadership",
-			"Communication",
-			"Problem Solving",
-			"Team Collaboration",
-		],
-		languages: [
-			{ language: "English", proficiency: "Native" },
-			{ language: "Spanish", proficiency: "Professional" },
-		],
+		technical:[],
+		soft: [],
+		languages: [],
 	},
-	projects: [
-		{
-			id: "proj-1",
-			name: "E-commerce Platform",
-			description:
-				"Full-featured e-commerce platform with real-time inventory management",
-			technologies: ["React", "Node.js", "MongoDB", "Stripe", "AWS"],
-			projectUrl: "https://demo-ecommerce.com",
-			githubUrl: "https://github.com/johndoe/ecommerce",
-			startDate: new Date("2022-01-01"),
-			endDate: new Date("2022-06-30"),
-			currentlyWorking: false,
-			highlights: [
-				"Handled 10k concurrent users with 99.9% uptime",
-				"Processed $500k in transactions",
-				"Integrated payment gateway and shipping APIs",
-			],
-		},
-		{
-			id: "proj-2",
-			name: "AI Task Management App",
-			description:
-				"Intelligent task manager with AI-powered prioritization and scheduling",
-			technologies: [
-				"Next.js",
-				"TypeScript",
-				"OpenAI",
-				"PostgreSQL",
-				"Prisma",
-			],
-			projectUrl: "https://taskmaster-ai.com",
-			githubUrl: "https://github.com/johndoe/taskmaster",
-			startDate: new Date("2023-03-01"),
-			endDate: undefined,
-			currentlyWorking: true,
-			highlights: [
-				"AI-powered task prioritization using GPT-4",
-				"Real-time collaboration with 5k active users",
-				"Integrated with Google Calendar and Slack",
-			],
-		},
-	],
-	certifications: [
-		{
-			id: "cert-1",
-			name: "AWS Certified Solutions Architect",
-			issuingOrganization: "Amazon Web Services",
-			issueDate: new Date("2023-01-15"),
-			expirationDate: new Date("2026-01-15"),
-			doesNotExpire: false,
-			credentialUrl: "https://aws.amazon.com/verification/xxxxx",
-		},
-		{
-			id: "cert-2",
-			name: "Professional Scrum Master (PSM I)",
-			issuingOrganization: "Scrum.org",
-			issueDate: new Date("2022-08-20"),
-			expirationDate: undefined,
-			doesNotExpire: true,
-			credentialUrl: "https://scrum.org/verify/12345",
-		},
-	],
-	achievements: [
-		{
-			id: "ach-1",
-			title: "Best Innovation Award 2023",
-			issuer: "Tech Corp Inc.",
-			date: new Date("2023-12-15"),
-			description:
-				"Recognized for developing an AI-powered tool that reduced deployment time by 60% and saved the company $200K annually.",
-		},
-		{
-			id: "ach-2",
-			title: "Employee of the Quarter Q2 2023",
-			issuer: "Tech Corp Inc.",
-			date: new Date("2023-06-30"),
-			description:
-				"Awarded for exceptional performance and leadership in delivering critical features ahead of schedule.",
-		},
-	],
+	projects: [],
+	certifications: [],
+	achievements: [],
 };
 
 type ResumeAction =
@@ -226,12 +50,14 @@ type ResumeAction =
 			payload: { id: string; data: Partial<Experience> };
 	  }
 	| { type: "REMOVE_EXPERIENCE"; payload: string }
+	| { type: "REORDER_EXPERIENCE"; payload: { id: string; direction: "up" | "down" } }
 	| { type: "ADD_EDUCATION"; payload: Education }
 	| {
 			type: "UPDATE_EDUCATION";
 			payload: { id: string; data: Partial<Education> };
 	  }
 	| { type: "REMOVE_EDUCATION"; payload: string }
+	| { type: "REORDER_EDUCATION"; payload: { id: string; direction: "up" | "down" } }
 	| { type: "UPDATE_SKILLS"; payload: Skills }
 	| { type: "ADD_PROJECT"; payload: Project }
 	| {
@@ -239,19 +65,51 @@ type ResumeAction =
 			payload: { id: string; data: Partial<Project> };
 	  }
 	| { type: "REMOVE_PROJECT"; payload: string }
+	| { type: "REORDER_PROJECT"; payload: { id: string; direction: "up" | "down" } }
 	| { type: "ADD_CERTIFICATION"; payload: Certification }
 	| {
 			type: "UPDATE_CERTIFICATION";
 			payload: { id: string; data: Partial<Certification> };
 	  }
 	| { type: "REMOVE_CERTIFICATION"; payload: string }
+	| { type: "REORDER_CERTIFICATION"; payload: { id: string; direction: "up" | "down" } }
 	| { type: "ADD_ACHIEVEMENT"; payload: Achievement }
 	| {
 			type: "UPDATE_ACHIEVEMENT";
 			payload: { id: string; data: Partial<Achievement> };
 	  }
 	| { type: "REMOVE_ACHIEVEMENT"; payload: string }
+	| { type: "REORDER_ACHIEVEMENT"; payload: { id: string; direction: "up" | "down" } }
 	| { type: "RESET_RESUME" };
+
+// Helper function to reorder items
+function reorderItems<T extends { id: string; order: number }>(
+	items: T[],
+	id: string,
+	direction: "up" | "down"
+): T[] {
+	// Sort items by order first
+	const sortedItems = [...items].sort((a, b) => a.order - b.order);
+	const currentIndex = sortedItems.findIndex((item) => item.id === id);
+	
+	if (currentIndex === -1) return items;
+	
+	// Can't move up if already first
+	if (direction === "up" && currentIndex === 0) return items;
+	
+	// Can't move down if already last
+	if (direction === "down" && currentIndex === sortedItems.length - 1) return items;
+	
+	const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+	
+	// Swap orders
+	const newItems = [...sortedItems];
+	const tempOrder = newItems[currentIndex].order;
+	newItems[currentIndex] = { ...newItems[currentIndex], order: newItems[targetIndex].order };
+	newItems[targetIndex] = { ...newItems[targetIndex], order: tempOrder };
+	
+	return newItems;
+}
 
 // Reducer function
 function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
@@ -292,6 +150,16 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
 				),
 			};
 
+		case "REORDER_EXPERIENCE":
+			return {
+				...state,
+				experience: reorderItems(
+					state.experience,
+					action.payload.id,
+					action.payload.direction
+				),
+			};
+
 		case "ADD_EDUCATION":
 			return {
 				...state,
@@ -313,6 +181,16 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
 				...state,
 				education: state.education.filter(
 					(edu) => edu.id !== action.payload
+				),
+			};
+
+		case "REORDER_EDUCATION":
+			return {
+				...state,
+				education: reorderItems(
+					state.education,
+					action.payload.id,
+					action.payload.direction
 				),
 			};
 
@@ -346,6 +224,16 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
 				),
 			};
 
+		case "REORDER_PROJECT":
+			return {
+				...state,
+				projects: reorderItems(
+					state.projects,
+					action.payload.id,
+					action.payload.direction
+				),
+			};
+
 		case "ADD_CERTIFICATION":
 			return {
 				...state,
@@ -370,6 +258,16 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
 				),
 			};
 
+		case "REORDER_CERTIFICATION":
+			return {
+				...state,
+				certifications: reorderItems(
+					state.certifications,
+					action.payload.id,
+					action.payload.direction
+				),
+			};
+
 		case "ADD_ACHIEVEMENT":
 			return {
 				...state,
@@ -391,6 +289,16 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
 				...state,
 				achievements: state.achievements.filter(
 					(ach) => ach.id !== action.payload
+				),
+			};
+
+		case "REORDER_ACHIEVEMENT":
+			return {
+				...state,
+				achievements: reorderItems(
+					state.achievements,
+					action.payload.id,
+					action.payload.direction
 				),
 			};
 

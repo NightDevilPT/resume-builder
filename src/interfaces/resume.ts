@@ -14,6 +14,7 @@ export interface PersonalInfo {
 
 export interface Experience {
 	id: string;
+	order: number;
 	jobTitle: string;
 	company: string;
 	location: string;
@@ -27,6 +28,7 @@ export interface Experience {
 
 export interface Education {
 	id: string;
+	order: number;
 	degree: string;
 	institution: string;
 	location: string;
@@ -50,6 +52,7 @@ export interface Skills {
 
 export interface Project {
 	id: string;
+	order: number;
 	name: string;
 	description?: string;
 	technologies: string[];
@@ -63,6 +66,7 @@ export interface Project {
 
 export interface Certification {
 	id: string;
+	order: number;
 	name: string;
 	issuingOrganization: string;
 	issueDate: Date;
@@ -73,6 +77,7 @@ export interface Certification {
 
 export interface Achievement {
 	id: string;
+	order: number;
 	title: string;
 	issuer: string;
 	date: Date;
