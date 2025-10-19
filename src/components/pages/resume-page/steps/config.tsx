@@ -9,6 +9,8 @@ import {
 	Trophy,
 	Lightbulb,
 } from "lucide-react";
+import { SkillsPage } from "./skills";
+import { EducationPage } from "./education";
 import { ExperiencePage } from "./experience";
 import type { LucideIcon } from "lucide-react";
 import { ResumeMetaPage } from "./resume-meta";
@@ -49,14 +51,14 @@ export const RESUME_STEPS: StepConfig[] = [
 		title: "Education",
 		description: "Academic background",
 		icon: GraduationCap,
-		component: () => <div>Education Form - Coming Soon</div>,
+		component: EducationPage,
 	},
 	{
 		id: 4,
 		title: "Skills",
 		description: "Technical & soft skills",
 		icon: Code,
-		component: () => <div>Skills Form - Coming Soon</div>,
+		component: SkillsPage,
 	},
 	{
 		id: 5,

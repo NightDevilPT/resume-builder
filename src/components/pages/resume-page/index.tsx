@@ -10,23 +10,33 @@ import { StepIndicator } from "./components/StepIndicator";
 import { useResume } from "@/components/providers/resume-form-provider";
 
 export function ResumeStepper() {
-	const { currentStep, prevStep, nextStep, goToStep, isFirstStep, isLastStep, resumeData } =
-		useResume();
+	const {
+		currentStep,
+		prevStep,
+		nextStep,
+		goToStep,
+		isFirstStep,
+		isLastStep,
+		resumeData,
+	} = useResume();
 
 	const CurrentStepComponent = RESUME_STEPS[currentStep].component;
 
 	const handleNext = () => {
 		// Trigger form submission by clicking the hidden submit button in the current step
-		const submitButton = document.querySelector('form button[type="submit"]');
+		const submitButton = document.querySelector(
+			'form button[type="submit"]'
+		);
 		if (submitButton instanceof HTMLElement) {
 			submitButton.click();
-			
+
 			// Check if form has errors after a short delay
 			setTimeout(() => {
 				const formErrors = document.querySelector('[role="alert"]');
 				if (formErrors) {
 					toast.error("Please fix the errors before continuing", {
-						description: "Make sure all required fields are filled correctly.",
+						description:
+							"Make sure all required fields are filled correctly.",
 					});
 				}
 			}, 100);
@@ -54,13 +64,17 @@ export function ResumeStepper() {
 							Professional Resume Builder
 						</h1>
 						<p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-							Create a stunning resume in minutes with our step-by-step builder
+							Create a stunning resume in minutes with our
+							step-by-step builder
 						</p>
 					</div>
 				</div>
 
 				{/* Step Indicator */}
-				<StepIndicator currentStep={currentStep} onStepClick={goToStep} />
+				<StepIndicator
+					currentStep={currentStep}
+					onStepClick={goToStep}
+				/>
 			</div>
 
 			{/* Main Content */}
@@ -88,10 +102,12 @@ export function ResumeStepper() {
 						<div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
 							<FileText className="w-8 h-8 text-primary" />
 						</div>
-						<h3 className="text-xl font-semibold">Resume Preview</h3>
+						<h3 className="text-xl font-semibold">
+							Resume Preview
+						</h3>
 						<p className="text-muted-foreground max-w-md">
-							Your resume preview will appear here as you fill in the information.
-							This feature is coming soon!
+							Your resume preview will appear here as you fill in
+							the information. This feature is coming soon!
 						</p>
 					</div>
 				</Card>
