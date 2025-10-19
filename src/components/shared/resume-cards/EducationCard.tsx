@@ -8,6 +8,7 @@ import {
 	Pencil,
 	Trash2,
 	Award,
+	MoreVertical,
 } from "lucide-react";
 import {
 	Card,
@@ -16,6 +17,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Education } from "@/interfaces/resume";
@@ -28,6 +35,7 @@ interface EducationCardProps {
 	onEdit: (education: Education) => void;
 	onDelete: (id: string) => void;
 	onReorder: (id: string, direction: "up" | "down") => void;
+	hideActions?: boolean;
 }
 
 export function EducationCard({
@@ -37,6 +45,7 @@ export function EducationCard({
 	onEdit,
 	onDelete,
 	onReorder,
+	hideActions = false,
 }: EducationCardProps) {
 	// Format grade display
 	const getGradeDisplay = () => {
@@ -105,46 +114,90 @@ export function EducationCard({
 						</CardDescription>
 					</div>
 
-					<div className="flex items-center gap-1">
-						{/* Reorder buttons */}
-						<div className="flex flex-col gap-0.5">
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								className="h-6 w-6"
-								onClick={() => onReorder(education.id, "up")}
-								disabled={index === 0}
-							>
-								<ChevronUp className="h-3 w-3" />
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								className="h-6 w-6"
-								onClick={() => onReorder(education.id, "down")}
-								disabled={index === totalCount - 1}
-							>
-								<ChevronDown className="h-3 w-3" />
-							</Button>
-						</div>
+					{!hideActions && (
+						<>
+							{/* Desktop Actions */}
+							<div className="hidden xl:flex items-center gap-1">
+								<div className="flex flex-col gap-0.5">
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										className="h-6 w-6"
+										onClick={() => onReorder(education.id, "up")}
+										disabled={index === 0}
+									>
+										<ChevronUp className="h-3 w-3" />
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										className="h-6 w-6"
+										onClick={() => onReorder(education.id, "down")}
+										disabled={index === totalCount - 1}
+									>
+										<ChevronDown className="h-3 w-3" />
+									</Button>
+								</div>
 
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => onEdit(education)}
-						>
-							<Pencil className="h-4 w-4" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => onDelete(education.id)}
-						>
-							<Trash2 className="h-4 w-4 text-destructive" />
-						</Button>
-					</div>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => onEdit(education)}
+								>
+									<Pencil className="h-4 w-4" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => onDelete(education.id)}
+								>
+									<Trash2 className="h-4 w-4 text-destructive" />
+								</Button>
+							</div>
+
+							{/* Mobile/Tablet Dropdown */}
+							<div className="xl:hidden">
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="ghost" size="icon">
+											<MoreVertical className="h-4 w-4" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										<DropdownMenuItem
+											onClick={() => onEdit(education)}
+										>
+											<Pencil className="h-4 w-4 mr-2" />
+											Edit
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => onReorder(education.id, "up")}
+											disabled={index === 0}
+										>
+											<ChevronUp className="h-4 w-4 mr-2" />
+											Move Up
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => onReorder(education.id, "down")}
+											disabled={index === totalCount - 1}
+										>
+											<ChevronDown className="h-4 w-4 mr-2" />
+											Move Down
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => onDelete(education.id)}
+											className="text-destructive"
+										>
+											<Trash2 className="h-4 w-4 mr-2" />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
+						</>
+					)}
 				</div>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -184,4 +237,5 @@ export function EducationCard({
 		</Card>
 	);
 }
+
 

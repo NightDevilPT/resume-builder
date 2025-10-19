@@ -1,17 +1,50 @@
 // components/pages/resume-page/components/StepIndicator.tsx
 "use client";
 
+import {
+	isStepAccessible,
+	getStepValidation,
+} from "@/lib/utils/resume-helpers";
 import React from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { RESUME_STEPS } from "../steps/config";
+import type { ResumeData } from "@/interfaces/resume";
 
 interface StepIndicatorProps {
 	currentStep: number;
+	resumeData: ResumeData;
 	onStepClick?: (step: number) => void;
 }
 
-export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) {
+export function StepIndicator({
+	currentStep,
+	resumeData,
+	onStepClick,
+}: StepIndicatorProps) {
+	const handleStepClick = (index: number) => {
+		const isAccessible = isStepAccessible(index, currentStep, resumeData);
+
+		if (!isAccessible && index > currentStep) {
+			const currentStepValid = getStepValidation(currentStep, resumeData);
+			if (!currentStepValid) {
+				toast.error("Step locked", {
+					description: `Please complete "${RESUME_STEPS[currentStep].title}" before proceeding.`,
+				});
+			} else {
+				toast.error("Step locked", {
+					description: "Complete previous steps to unlock this step.",
+				});
+			}
+			return;
+		}
+
+		if (onStepClick && isAccessible) {
+			onStepClick(index);
+		}
+	};
+
 	return (
 		<div className="w-full">
 			{/* Desktop: Show all steps */}
@@ -20,17 +53,31 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 					const Icon = step.icon;
 					const isActive = currentStep === index;
 					const isCompleted = currentStep > index;
-					const isClickable = onStepClick !== undefined;
+					const isAccessible = isStepAccessible(
+						index,
+						currentStep,
+						resumeData
+					);
+					const isClickable =
+						onStepClick !== undefined && isAccessible;
 
 					return (
 						<div key={step.id} className="flex items-center flex-1">
 							<button
 								type="button"
-								onClick={() => isClickable && onStepClick(index)}
-								disabled={!isClickable}
+								onClick={() => handleStepClick(index)}
+								disabled={!onStepClick}
+								title={
+									!isAccessible && index > currentStep
+										? "Locked - Complete previous steps first"
+										: step.title
+								}
 								className={cn(
 									"relative flex flex-col items-center group",
-									isClickable && "cursor-pointer hover:opacity-80"
+									isClickable &&
+										"cursor-pointer hover:opacity-80",
+									!isAccessible &&
+										"cursor-not-allowed opacity-50"
 								)}
 							>
 								{/* Step Circle */}
@@ -44,14 +91,21 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 											"border-primary bg-primary text-primary-foreground",
 										!isActive &&
 											!isCompleted &&
-											"border-muted-foreground/30 bg-background text-muted-foreground"
+											isAccessible &&
+											"border-muted-foreground/30 bg-background text-muted-foreground",
+										!isAccessible &&
+											"border-muted-foreground/20 bg-muted/30 text-muted-foreground/50"
 									)}
 								>
-								{isCompleted ? (
-									<Check className="w-4 h-4" />
-								) : (
-									<Icon className="w-4 h-4" />
-								)}
+									{!isAccessible &&
+									!isCompleted &&
+									!isActive ? (
+										<Lock className="w-4 h-4" />
+									) : isCompleted ? (
+										<Check className="w-4 h-4" />
+									) : (
+										<Icon className="w-4 h-4" />
+									)}
 								</div>
 
 								{/* Step Label */}
@@ -60,11 +114,22 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 										className={cn(
 											"text-xs font-medium text-center",
 											isActive && "text-primary",
-											!isActive && "text-muted-foreground"
+											!isActive &&
+												isAccessible &&
+												"text-muted-foreground",
+											!isAccessible &&
+												"text-muted-foreground/50"
 										)}
 									>
 										{step.title}
 									</span>
+									{!isAccessible &&
+										!isCompleted &&
+										!isActive && (
+											<span className="text-[10px] text-muted-foreground/50">
+												Locked
+											</span>
+										)}
 								</div>
 							</button>
 
@@ -73,7 +138,9 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 								<div
 									className={cn(
 										"flex-1 h-0.5 mx-1 transition-colors duration-200",
-										isCompleted ? "bg-primary" : "bg-muted-foreground/30"
+										isCompleted
+											? "bg-primary"
+											: "bg-muted-foreground/30"
 									)}
 								/>
 							)}
@@ -119,7 +186,9 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 								<div
 									className={cn(
 										"flex-1 h-0.5 mx-0.5 transition-colors duration-200",
-										isCompleted ? "bg-primary" : "bg-muted-foreground/30"
+										isCompleted
+											? "bg-primary"
+											: "bg-muted-foreground/30"
 									)}
 								/>
 							)}
@@ -137,14 +206,20 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 							Step {currentStep + 1} of {RESUME_STEPS.length}
 						</span>
 						<span className="text-xs font-medium text-primary">
-							{Math.round(((currentStep + 1) / RESUME_STEPS.length) * 100)}%
+							{Math.round(
+								((currentStep + 1) / RESUME_STEPS.length) * 100
+							)}
+							%
 						</span>
 					</div>
 					<div className="w-full h-2 bg-muted rounded-full overflow-hidden">
 						<div
 							className="h-full bg-primary transition-all duration-300"
 							style={{
-								width: `${((currentStep + 1) / RESUME_STEPS.length) * 100}%`,
+								width: `${
+									((currentStep + 1) / RESUME_STEPS.length) *
+									100
+								}%`,
 							}}
 						/>
 					</div>
@@ -192,4 +267,3 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 		</div>
 	);
 }
-

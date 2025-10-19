@@ -73,6 +73,7 @@ export function ResumeStepper() {
 				{/* Step Indicator */}
 				<StepIndicator
 					currentStep={currentStep}
+					resumeData={resumeData}
 					onStepClick={goToStep}
 				/>
 			</div>
@@ -82,7 +83,7 @@ export function ResumeStepper() {
 				{/* Form Section */}
 				<Card className="flex flex-col overflow-hidden">
 					{/* Form Content - Scrollable */}
-					<ScrollArea className="flex-1 overflow-y-auto">
+					<ScrollArea className="flex-1 overflow-hidden">
 						<CurrentStepComponent />
 					</ScrollArea>
 

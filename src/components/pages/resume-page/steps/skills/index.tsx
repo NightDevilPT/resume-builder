@@ -25,19 +25,20 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/separator";
 import { useForm, useFieldArray } from "react-hook-form";
-import { Code, Plus, Trash2, X, Languages } from "lucide-react";
+import { Code, Plus, Trash2, X, Languages, Star } from "lucide-react";
 import { useResume } from "@/components/providers/resume-form-provider";
 import { skillsSchema, type SkillsFormValues } from "@/lib/validations/skills";
 
 export function SkillsPage() {
 	const { resumeData, dispatch, nextStep } = useResume();
 	const [technicalInput, setTechnicalInput] = useState("");
+	const [technicalLevel, setTechnicalLevel] = useState(5);
 	const [softInput, setSoftInput] = useState("");
+	const [softLevel, setSoftLevel] = useState(5);
 
 	const form = useForm<SkillsFormValues>({
 		resolver: zodResolver(skillsSchema),
@@ -67,21 +68,28 @@ export function SkillsPage() {
 	// Handle adding technical skill
 	const handleAddTechnicalSkill = () => {
 		const trimmedSkill = technicalInput.trim();
-		if (trimmedSkill && !technicalSkills.includes(trimmedSkill)) {
+		if (trimmedSkill) {
 			const currentSkills = form.getValues("technical");
-			if (currentSkills.length < 30) {
-				form.setValue("technical", [...currentSkills, trimmedSkill]);
+			const skillExists = currentSkills.some(
+				(s) => s.name === trimmedSkill
+			);
+			if (!skillExists && currentSkills.length < 30) {
+				form.setValue("technical", [
+					...currentSkills,
+					{ name: trimmedSkill, level: technicalLevel },
+				]);
 				setTechnicalInput("");
+				setTechnicalLevel(5);
 			}
 		}
 	};
 
 	// Handle removing technical skill
-	const handleRemoveTechnicalSkill = (skillToRemove: string) => {
+	const handleRemoveTechnicalSkill = (skillName: string) => {
 		const currentSkills = form.getValues("technical");
 		form.setValue(
 			"technical",
-			currentSkills.filter((skill) => skill !== skillToRemove)
+			currentSkills.filter((skill) => skill.name !== skillName)
 		);
 	};
 
@@ -98,21 +106,28 @@ export function SkillsPage() {
 	// Handle adding soft skill
 	const handleAddSoftSkill = () => {
 		const trimmedSkill = softInput.trim();
-		if (trimmedSkill && !softSkills.includes(trimmedSkill)) {
+		if (trimmedSkill) {
 			const currentSkills = form.getValues("soft");
-			if (currentSkills.length < 20) {
-				form.setValue("soft", [...currentSkills, trimmedSkill]);
+			const skillExists = currentSkills.some(
+				(s) => s.name === trimmedSkill
+			);
+			if (!skillExists && currentSkills.length < 20) {
+				form.setValue("soft", [
+					...currentSkills,
+					{ name: trimmedSkill, level: softLevel },
+				]);
 				setSoftInput("");
+				setSoftLevel(5);
 			}
 		}
 	};
 
 	// Handle removing soft skill
-	const handleRemoveSoftSkill = (skillToRemove: string) => {
+	const handleRemoveSoftSkill = (skillName: string) => {
 		const currentSkills = form.getValues("soft");
 		form.setValue(
 			"soft",
-			currentSkills.filter((skill) => skill !== skillToRemove)
+			currentSkills.filter((skill) => skill.name !== skillName)
 		);
 	};
 
@@ -133,8 +148,8 @@ export function SkillsPage() {
 		dispatch({
 			type: "UPDATE_SKILLS",
 			payload: {
-				technical: data.technical.filter((s) => s.trim() !== ""),
-				soft: data.soft.filter((s) => s.trim() !== ""),
+				technical: data.technical.filter((s) => s.name.trim() !== ""),
+				soft: data.soft.filter((s) => s.name.trim() !== ""),
 				languages: filteredLanguages,
 			},
 		});
@@ -146,8 +161,8 @@ export function SkillsPage() {
 	};
 
 	return (
-		<div className="w-full h-full flex flex-col">
-			<div className="flex-1 px-4">
+		<div className="w-full">
+			<div className="px-4">
 				<div className="max-w-3xl mx-auto">
 					{/* Header Card */}
 					<Card className="p-0 border-none shadow-none">
@@ -177,7 +192,7 @@ export function SkillsPage() {
 							className="space-y-6 mt-6"
 						>
 							{/* Technical Skills Card */}
-							<Card className="p-0 pt-4">
+							<Card>
 								<CardHeader>
 									<CardTitle>Technical Skills</CardTitle>
 									<CardDescription>
@@ -199,67 +214,122 @@ export function SkillsPage() {
 									</div>
 
 									{/* Input for adding technical skills */}
-									<div className="flex gap-2">
-										<Input
-											placeholder="e.g., React, Python, Docker..."
-											value={technicalInput}
-											onChange={(e) =>
-												setTechnicalInput(
-													e.target.value
-												)
-											}
-											onKeyDown={handleTechnicalKeyDown}
-											disabled={
-												technicalSkills.length >= 30
-											}
-										/>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={handleAddTechnicalSkill}
-											disabled={
-												!technicalInput.trim() ||
-												technicalSkills.length >= 30
-											}
-										>
-											<Plus className="h-4 w-4 mr-2" />
-											Add
-										</Button>
+									<div className="space-y-3">
+										<div className="flex gap-2">
+											<Input
+												placeholder="e.g., React, Python, Docker..."
+												value={technicalInput}
+												onChange={(e) =>
+													setTechnicalInput(
+														e.target.value
+													)
+												}
+												onKeyDown={
+													handleTechnicalKeyDown
+												}
+												disabled={
+													technicalSkills.length >= 30
+												}
+												className="flex-1"
+											/>
+											<div className="flex items-center gap-2 min-w-[120px]">
+												<Input
+													type="number"
+													min="1"
+													max="10"
+													value={technicalLevel}
+													onChange={(e) =>
+														setTechnicalLevel(
+															Number(
+																e.target.value
+															)
+														)
+													}
+													className="w-16 text-center"
+												/>
+												<span className="text-xs text-muted-foreground">
+													/10
+												</span>
+											</div>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onClick={
+													handleAddTechnicalSkill
+												}
+												disabled={
+													!technicalInput.trim() ||
+													technicalSkills.length >= 30
+												}
+											>
+												<Plus className="h-4 w-4 mr-2" />
+												Add
+											</Button>
+										</div>
+										<p className="text-xs text-muted-foreground">
+											Rate your proficiency level from 1
+											(beginner) to 10 (expert)
+										</p>
 									</div>
 
-									{/* Display technical skills as badges */}
+									{/* Display technical skills with levels */}
 									{technicalSkills.length > 0 ? (
-										<div className="flex flex-wrap gap-2 rounded-md bg-muted/30">
+										<div className="space-y-2">
 											{technicalSkills.map(
 												(skill, index) => (
-													<Badge
+													<div
 														key={index}
-														variant="secondary"
-														className="pl-3 pr-1 py-1 text-sm gap-1"
+														className="flex items-center gap-3 p-3 border rounded-md bg-card hover:bg-accent/50 transition-colors group"
 													>
-														<span>{skill}</span>
+														<span className="flex-1 text-sm font-medium">
+															{skill.name}
+														</span>
+														<div className="flex items-center gap-2">
+															<div className="flex gap-0.5">
+																{Array.from({
+																	length: 10,
+																}).map(
+																	(_, i) => (
+																		<Star
+																			key={
+																				i
+																			}
+																			className={`h-3 w-3 ${
+																				i <
+																				skill.level
+																					? "fill-primary text-primary"
+																					: "text-muted-foreground/30"
+																			}`}
+																		/>
+																	)
+																)}
+															</div>
+															<span className="text-xs font-semibold text-muted-foreground min-w-[30px]">
+																{skill.level}/10
+															</span>
+														</div>
 														<Button
 															type="button"
 															variant="ghost"
 															size="icon"
-															className="h-4 w-4 p-0 hover:bg-transparent hover:text-destructive"
+															className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
 															onClick={() =>
 																handleRemoveTechnicalSkill(
-																	skill
+																	skill.name
 																)
 															}
 														>
-															<X className="h-3 w-3" />
+															<X className="h-4 w-4 text-destructive" />
 														</Button>
-													</Badge>
+													</div>
 												)
 											)}
 										</div>
 									) : (
 										<div className="p-4 border rounded-md bg-muted/20 text-center text-sm text-muted-foreground">
 											No technical skills added yet. Type
-											a skill and press Enter or click
+											a skill, set the level, and click
 											Add.
 										</div>
 									)}
@@ -277,7 +347,7 @@ export function SkillsPage() {
 							</Card>
 
 							{/* Soft Skills Card */}
-							<Card className="p-0 pt-4">
+							<Card>
 								<CardHeader>
 									<CardTitle>Soft Skills</CardTitle>
 									<CardDescription>
@@ -299,61 +369,110 @@ export function SkillsPage() {
 									</div>
 
 									{/* Input for adding soft skills */}
-									<div className="flex gap-2">
-										<Input
-											placeholder="e.g., Leadership, Communication, Problem Solving..."
-											value={softInput}
-											onChange={(e) =>
-												setSoftInput(e.target.value)
-											}
-											onKeyDown={handleSoftKeyDown}
-											disabled={softSkills.length >= 20}
-										/>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={handleAddSoftSkill}
-											disabled={
-												!softInput.trim() ||
-												softSkills.length >= 20
-											}
-										>
-											<Plus className="h-4 w-4 mr-2" />
-											Add
-										</Button>
+									<div className="space-y-3">
+										<div className="flex gap-2">
+											<Input
+												placeholder="e.g., Leadership, Communication, Problem Solving..."
+												value={softInput}
+												onChange={(e) =>
+													setSoftInput(e.target.value)
+												}
+												onKeyDown={handleSoftKeyDown}
+												disabled={
+													softSkills.length >= 20
+												}
+												className="flex-1"
+											/>
+											<div className="flex items-center gap-2 min-w-[120px]">
+												<Input
+													type="number"
+													min="1"
+													max="10"
+													value={softLevel}
+													onChange={(e) =>
+														setSoftLevel(
+															Number(
+																e.target.value
+															)
+														)
+													}
+													className="w-16 text-center"
+												/>
+												<span className="text-xs text-muted-foreground">
+													/10
+												</span>
+											</div>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onClick={handleAddSoftSkill}
+												disabled={
+													!softInput.trim() ||
+													softSkills.length >= 20
+												}
+											>
+												<Plus className="h-4 w-4 mr-2" />
+												Add
+											</Button>
+										</div>
+										<p className="text-xs text-muted-foreground">
+											Rate your proficiency level from 1
+											(beginner) to 10 (expert)
+										</p>
 									</div>
 
-									{/* Display soft skills as badges */}
+									{/* Display soft skills with levels */}
 									{softSkills.length > 0 ? (
-										<div className="flex flex-wrap gap-2 rounded-md bg-muted/30">
+										<div className="space-y-2">
 											{softSkills.map((skill, index) => (
-												<Badge
+												<div
 													key={index}
-													variant="secondary"
-													className="pl-3 pr-1 py-1 text-sm gap-1"
+													className="flex items-center gap-3 p-3 border rounded-md bg-card hover:bg-accent/50 transition-colors group"
 												>
-													<span>{skill}</span>
+													<span className="flex-1 text-sm font-medium">
+														{skill.name}
+													</span>
+													<div className="flex items-center gap-2">
+														<div className="flex gap-0.5">
+															{Array.from({
+																length: 10,
+															}).map((_, i) => (
+																<Star
+																	key={i}
+																	className={`h-3 w-3 ${
+																		i <
+																		skill.level
+																			? "fill-primary text-primary"
+																			: "text-muted-foreground/30"
+																	}`}
+																/>
+															))}
+														</div>
+														<span className="text-xs font-semibold text-muted-foreground min-w-[30px]">
+															{skill.level}/10
+														</span>
+													</div>
 													<Button
 														type="button"
 														variant="ghost"
 														size="icon"
-														className="h-4 w-4 p-0 hover:bg-transparent hover:text-destructive"
+														className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
 														onClick={() =>
 															handleRemoveSoftSkill(
-																skill
+																skill.name
 															)
 														}
 													>
-														<X className="h-3 w-3" />
+														<X className="h-4 w-4 text-destructive" />
 													</Button>
-												</Badge>
+												</div>
 											))}
 										</div>
 									) : (
 										<div className="p-4 border rounded-md bg-muted/20 text-center text-sm text-muted-foreground">
 											No soft skills added yet. Type a
-											skill and press Enter or click Add.
+											skill, set the level, and click Add.
 										</div>
 									)}
 
@@ -512,6 +631,11 @@ export function SkillsPage() {
 									Continue to Next Step
 								</Button>
 							</div>
+
+							{/* Hidden submit button */}
+							<Button type="submit" className="hidden">
+								Continue
+							</Button>
 						</form>
 					</Form>
 				</div>

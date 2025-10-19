@@ -42,8 +42,14 @@ export interface Education {
 }
 
 export interface Skills {
-	technical: string[];
-	soft: string[];
+	technical: Array<{
+		name: string;
+		level: number; // 1-10
+	}>;
+	soft: Array<{
+		name: string;
+		level: number; // 1-10
+	}>;
 	languages: Array<{
 		language: string;
 		proficiency: "Native" | "Fluent" | "Professional" | "Basic";
@@ -54,10 +60,13 @@ export interface Project {
 	id: string;
 	order: number;
 	name: string;
+	subtitle?: string;
 	description?: string;
 	technologies: string[];
-	projectUrl: string;
-	githubUrl: string;
+	links: Array<{
+		label: string;
+		url: string;
+	}>;
 	startDate: Date;
 	endDate?: Date;
 	currentlyWorking: boolean;

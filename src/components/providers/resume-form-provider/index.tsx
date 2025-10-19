@@ -11,10 +11,12 @@ import {
 	ResumeData,
 	Skills,
 } from "@/interfaces/resume";
+import { getStepValidation } from "@/lib/utils/resume-helpers";
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import { dummyResumeBuilderRecord } from "@/constants/dummy-resume-builder-record";
 
-// Initial state - PREFILLED WITH SAMPLE DATA FOR TESTING
-const initialResumeData: ResumeData = {
+// Initial state - Empty by default, can be prefilled with dummy data
+const emptyResumeData: ResumeData = {
 	name: "",
 	description: "",
 	personalInfo: {
@@ -37,6 +39,11 @@ const initialResumeData: ResumeData = {
 	certifications: [],
 	achievements: [],
 };
+
+// Use dummy data if available, otherwise use empty data
+const initialResumeData: ResumeData = dummyResumeBuilderRecord?.name
+	? dummyResumeBuilderRecord
+	: emptyResumeData;
 
 type ResumeAction =
 	| {
@@ -355,11 +362,20 @@ export function ResumeProvider({
 	totalSteps = 9,
 }: ResumeProviderProps) {
 	const [resumeData, dispatch] = useReducer(resumeReducer, initialResumeData);
-	const [currentStep, setCurrentStep] = React.useState(2);
+	const [currentStep, setCurrentStep] = React.useState(0);
 
 	const nextStep = () => {
+		// Validate current step before moving to next
 		if (currentStep < totalSteps - 1) {
-			setCurrentStep((prev) => prev + 1);
+			const isValid = getStepValidation(currentStep, resumeData);
+			if (isValid) {
+				setCurrentStep((prev) => prev + 1);
+			} else {
+				// Step is not valid, don't allow progression
+				console.warn(
+					"Current step is not valid. Please complete all required fields."
+				);
+			}
 		}
 	};
 
@@ -371,7 +387,27 @@ export function ResumeProvider({
 
 	const goToStep = (step: number) => {
 		if (step >= 0 && step < totalSteps) {
-			setCurrentStep(step);
+			// Can always go back
+			if (step <= currentStep) {
+				setCurrentStep(step);
+				return;
+			}
+
+			// Going forward - check if all previous steps are valid
+			let canProceed = true;
+			for (let i = 0; i < step; i++) {
+				if (!getStepValidation(i, resumeData)) {
+					canProceed = false;
+					console.warn(
+						`Cannot skip to step ${step}. Step ${i} is incomplete.`
+					);
+					break;
+				}
+			}
+
+			if (canProceed) {
+				setCurrentStep(step);
+			}
 		}
 	};
 

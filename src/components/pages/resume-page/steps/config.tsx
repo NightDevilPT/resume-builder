@@ -10,11 +10,15 @@ import {
 	Lightbulb,
 } from "lucide-react";
 import { SkillsPage } from "./skills";
+import { ReviewPage } from "./review";
+import { ProjectsPage } from "./projects";
 import { EducationPage } from "./education";
 import { ExperiencePage } from "./experience";
 import type { LucideIcon } from "lucide-react";
 import { ResumeMetaPage } from "./resume-meta";
 import { PersonalInfoPage } from "./personal-info";
+import { AchievementsPage } from "./achievements";
+import { CertificationsPage } from "./certifications";
 
 export interface StepConfig {
 	id: number;
@@ -65,27 +69,27 @@ export const RESUME_STEPS: StepConfig[] = [
 		title: "Projects",
 		description: "Portfolio projects",
 		icon: FolderGit2,
-		component: () => <div>Projects Form - Coming Soon</div>,
+		component: ProjectsPage,
 	},
 	{
 		id: 6,
 		title: "Certifications",
 		description: "Professional certifications",
 		icon: Award,
-		component: () => <div>Certifications Form - Coming Soon</div>,
+		component: CertificationsPage,
 	},
 	{
 		id: 7,
 		title: "Achievements",
 		description: "Notable accomplishments",
 		icon: Trophy,
-		component: () => <div>Achievements Form - Coming Soon</div>,
+		component: AchievementsPage,
 	},
 	{
 		id: 8,
 		title: "Review",
 		description: "Final review",
 		icon: Lightbulb,
-		component: () => <div>Review & Export - Coming Soon</div>,
+		component: ReviewPage,
 	},
 ];
