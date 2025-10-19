@@ -27,3 +27,24 @@ export const areRequiredSectionsComplete = (resumeData: ResumeData): boolean => 
 	return hasResumeMeta && hasPersonalInfo && hasExperience && hasSkills;
 };
 
+/**
+ * Format date range for display
+ */
+export const formatDateRange = (
+	startDate: Date,
+	endDate?: Date,
+	isCurrent: boolean = false
+): string => {
+	const formatDate = (date: Date): string => {
+		return new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+			month: "short",
+		}).format(date);
+	};
+
+	const start = formatDate(startDate);
+	const end = isCurrent ? "Present" : endDate ? formatDate(endDate) : "";
+
+	return `${start} - ${end}`;
+};
+

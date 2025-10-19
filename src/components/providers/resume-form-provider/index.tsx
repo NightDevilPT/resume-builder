@@ -27,9 +27,9 @@ const initialResumeData: ResumeData = {
 		summary: "",
 	},
 	experience: [],
-	education:[],
+	education: [],
 	skills: {
-		technical:[],
+		technical: [],
 		soft: [],
 		languages: [],
 	},
@@ -50,14 +50,20 @@ type ResumeAction =
 			payload: { id: string; data: Partial<Experience> };
 	  }
 	| { type: "REMOVE_EXPERIENCE"; payload: string }
-	| { type: "REORDER_EXPERIENCE"; payload: { id: string; direction: "up" | "down" } }
+	| {
+			type: "REORDER_EXPERIENCE";
+			payload: { id: string; direction: "up" | "down" };
+	  }
 	| { type: "ADD_EDUCATION"; payload: Education }
 	| {
 			type: "UPDATE_EDUCATION";
 			payload: { id: string; data: Partial<Education> };
 	  }
 	| { type: "REMOVE_EDUCATION"; payload: string }
-	| { type: "REORDER_EDUCATION"; payload: { id: string; direction: "up" | "down" } }
+	| {
+			type: "REORDER_EDUCATION";
+			payload: { id: string; direction: "up" | "down" };
+	  }
 	| { type: "UPDATE_SKILLS"; payload: Skills }
 	| { type: "ADD_PROJECT"; payload: Project }
 	| {
@@ -65,21 +71,30 @@ type ResumeAction =
 			payload: { id: string; data: Partial<Project> };
 	  }
 	| { type: "REMOVE_PROJECT"; payload: string }
-	| { type: "REORDER_PROJECT"; payload: { id: string; direction: "up" | "down" } }
+	| {
+			type: "REORDER_PROJECT";
+			payload: { id: string; direction: "up" | "down" };
+	  }
 	| { type: "ADD_CERTIFICATION"; payload: Certification }
 	| {
 			type: "UPDATE_CERTIFICATION";
 			payload: { id: string; data: Partial<Certification> };
 	  }
 	| { type: "REMOVE_CERTIFICATION"; payload: string }
-	| { type: "REORDER_CERTIFICATION"; payload: { id: string; direction: "up" | "down" } }
+	| {
+			type: "REORDER_CERTIFICATION";
+			payload: { id: string; direction: "up" | "down" };
+	  }
 	| { type: "ADD_ACHIEVEMENT"; payload: Achievement }
 	| {
 			type: "UPDATE_ACHIEVEMENT";
 			payload: { id: string; data: Partial<Achievement> };
 	  }
 	| { type: "REMOVE_ACHIEVEMENT"; payload: string }
-	| { type: "REORDER_ACHIEVEMENT"; payload: { id: string; direction: "up" | "down" } }
+	| {
+			type: "REORDER_ACHIEVEMENT";
+			payload: { id: string; direction: "up" | "down" };
+	  }
 	| { type: "RESET_RESUME" };
 
 // Helper function to reorder items
@@ -91,23 +106,28 @@ function reorderItems<T extends { id: string; order: number }>(
 	// Sort items by order first
 	const sortedItems = [...items].sort((a, b) => a.order - b.order);
 	const currentIndex = sortedItems.findIndex((item) => item.id === id);
-	
+
 	if (currentIndex === -1) return items;
-	
+
 	// Can't move up if already first
 	if (direction === "up" && currentIndex === 0) return items;
-	
+
 	// Can't move down if already last
-	if (direction === "down" && currentIndex === sortedItems.length - 1) return items;
-	
-	const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-	
+	if (direction === "down" && currentIndex === sortedItems.length - 1)
+		return items;
+
+	const targetIndex =
+		direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
 	// Swap orders
 	const newItems = [...sortedItems];
 	const tempOrder = newItems[currentIndex].order;
-	newItems[currentIndex] = { ...newItems[currentIndex], order: newItems[targetIndex].order };
+	newItems[currentIndex] = {
+		...newItems[currentIndex],
+		order: newItems[targetIndex].order,
+	};
 	newItems[targetIndex] = { ...newItems[targetIndex], order: tempOrder };
-	
+
 	return newItems;
 }
 
@@ -335,7 +355,7 @@ export function ResumeProvider({
 	totalSteps = 9,
 }: ResumeProviderProps) {
 	const [resumeData, dispatch] = useReducer(resumeReducer, initialResumeData);
-	const [currentStep, setCurrentStep] = React.useState(0);
+	const [currentStep, setCurrentStep] = React.useState(2);
 
 	const nextStep = () => {
 		if (currentStep < totalSteps - 1) {

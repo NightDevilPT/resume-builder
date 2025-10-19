@@ -42,15 +42,29 @@ export const experienceSchema = z
 			.max(1000, "Description must be less than 1000 characters")
 			.optional()
 			.or(z.literal("")),
-		achievements: z
-			.array(z.string().min(1, "Achievement cannot be empty"))
-			.min(1, "Add at least one achievement or responsibility")
-			.max(10, "Maximum 10 achievements allowed"),
-		skillsUsed: z
-			.array(z.string().min(1, "Skill cannot be empty"))
-			.min(1, "Add at least one skill used")
-			.max(20, "Maximum 20 skills allowed"),
+	achievements: z.array(z.string()).min(1).max(10),
+	skillsUsed: z.array(z.string()).min(1).max(20),
 	})
+	.refine(
+		(data) => {
+			// At least one achievement must be non-empty
+			return data.achievements.some((item) => item.trim().length > 0);
+		},
+		{
+			message: "At least one achievement must be filled",
+			path: ["achievements"],
+		}
+	)
+	.refine(
+		(data) => {
+			// At least one skill must be non-empty
+			return data.skillsUsed.some((item) => item.trim().length > 0);
+		},
+		{
+			message: "At least one skill must be filled",
+			path: ["skillsUsed"],
+		}
+	)
 	.refine(
 		(data) => {
 			// If currently working, endDate should be empty

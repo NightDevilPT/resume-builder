@@ -1,3 +1,4 @@
+// components/shared/dialogs/ExperienceDialog.tsx
 "use client";
 
 import {
@@ -6,99 +7,91 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
+	DialogFooter,
 } from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
 import {
-	ExperienceFormValues,
 	experienceSchema,
+	type ExperienceFormValues,
 } from "@/lib/validations/experience";
 import { Plus, X } from "lucide-react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Experience } from "@/interfaces/resume";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { Experience } from "@/interfaces/resume";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { DatePicker } from "@/components/shared/date-picker";
 
 interface ExperienceDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	experience?: Experience;
-	onSave: (data: ExperienceFormValues) => void;
+	onSubmit: (data: Experience) => void;
+	initialData?: Experience;
+	mode?: "add" | "edit";
 }
 
 export function ExperienceDialog({
 	open,
 	onOpenChange,
-	experience,
-	onSave,
+	onSubmit,
+	initialData,
+	mode = "add",
 }: ExperienceDialogProps) {
-	const [achievementInput, setAchievementInput] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [skillInput, setSkillInput] = useState("");
+	const [achievementInput, setAchievementInput] = useState("");
 
 	const form = useForm<ExperienceFormValues>({
 		resolver: zodResolver(experienceSchema),
-		defaultValues: experience
-			? {
-					jobTitle: experience.jobTitle,
-					company: experience.company,
-					location: experience.location,
-					startDate: experience.startDate.toISOString().split("T")[0],
-					endDate: experience.endDate
-						? experience.endDate.toISOString().split("T")[0]
-						: "",
-					currentlyWorking: experience.currentlyWorking,
-					description: experience.description,
-					achievements: experience.achievements,
-					skillsUsed: experience.skillsUsed,
-			  }
-			: {
-					jobTitle: "",
-					company: "",
-					location: "",
-					startDate: "",
-					endDate: "",
-					currentlyWorking: false,
-					description: "",
-					achievements: [],
-					skillsUsed: [],
-			  },
-		mode: "onChange",
+		mode: "onBlur",
+		defaultValues: {
+			jobTitle: "",
+			company: "",
+			location: "",
+			startDate: "",
+			endDate: "",
+			currentlyWorking: false,
+			description: "",
+			achievements: [""],
+			skillsUsed: [""],
+		},
 	});
 
-	const currentlyWorking = form.watch("currentlyWorking");
-	const achievements = form.watch("achievements");
-	const skillsUsed = form.watch("skillsUsed");
-
-	// Update form when experience prop changes
-	useEffect(() => {
-		if (experience && open) {
+	// Update form when initialData changes
+	React.useEffect(() => {
+		if (initialData) {
 			form.reset({
-				jobTitle: experience.jobTitle,
-				company: experience.company,
-				location: experience.location,
-				startDate: experience.startDate.toISOString().split("T")[0],
-				endDate: experience.endDate
-					? experience.endDate.toISOString().split("T")[0]
-					: "",
-				currentlyWorking: experience.currentlyWorking,
-				description: experience.description,
-				achievements: experience.achievements,
-				skillsUsed: experience.skillsUsed,
+				jobTitle: initialData.jobTitle,
+				company: initialData.company,
+				location: initialData.location,
+				startDate:
+					initialData.startDate?.toISOString().split("T")[0] || "",
+				endDate: initialData.endDate?.toISOString().split("T")[0] || "",
+				currentlyWorking: initialData.currentlyWorking,
+				description: initialData.description || "",
+				achievements:
+					initialData.achievements.length > 0
+						? initialData.achievements
+						: [""],
+				skillsUsed:
+					initialData.skillsUsed.length > 0
+						? initialData.skillsUsed
+						: [""],
 			});
-		} else if (!experience && open) {
+		} else {
 			form.reset({
 				jobTitle: "",
 				company: "",
@@ -107,331 +100,540 @@ export function ExperienceDialog({
 				endDate: "",
 				currentlyWorking: false,
 				description: "",
-				achievements: [],
-				skillsUsed: [],
+				achievements: [""],
+				skillsUsed: [""],
 			});
 		}
-	}, [experience, open, form]);
+		setSkillInput(""); // Clear skill input when data changes
+		setAchievementInput(""); // Clear achievement input when data changes
+	}, [initialData, form]);
 
-	const handleSubmit = (data: ExperienceFormValues) => {
-		onSave(data);
-		onOpenChange(false);
-		setAchievementInput("");
-		setSkillInput("");
-		form.reset();
-	};
+	const currentlyWorking = form.watch("currentlyWorking");
+	const skills = form.watch("skillsUsed");
+	const achievements = form.watch("achievements");
 
-	// Reset form when dialog opens/closes
-	const handleOpenChange = (open: boolean) => {
-		if (!open) {
-			form.reset();
-			setAchievementInput("");
-			setSkillInput("");
+	// Clear endDate validation when currently working is checked
+	React.useEffect(() => {
+		if (currentlyWorking) {
+			form.setValue("endDate", "");
+			form.clearErrors("endDate");
 		}
-		onOpenChange(open);
-	};
+	}, [currentlyWorking, form]);
 
-	const addAchievement = () => {
-		if (achievementInput.trim()) {
-			form.setValue(
-				"achievements",
-				[...achievements, achievementInput.trim()],
-				{
-					shouldValidate: true,
-				}
-			);
-			setAchievementInput("");
+	// Handle adding an achievement
+	const handleAddAchievement = () => {
+		const trimmedAchievement = achievementInput.trim();
+		if (trimmedAchievement) {
+			const currentAchievements = form.getValues("achievements");
+			if (currentAchievements.length < 10) {
+				form.setValue("achievements", [
+					...currentAchievements,
+					trimmedAchievement,
+				]);
+				setAchievementInput("");
+			}
 		}
 	};
 
-	const removeAchievement = (index: number) => {
+	// Handle removing an achievement
+	const handleRemoveAchievement = (achievementToRemove: string) => {
+		const currentAchievements = form.getValues("achievements");
 		form.setValue(
 			"achievements",
-			achievements.filter((_, i) => i !== index),
-			{ shouldValidate: true }
+			currentAchievements.filter(
+				(achievement) => achievement !== achievementToRemove
+			)
 		);
 	};
 
-	const addSkill = () => {
-		if (skillInput.trim()) {
-			form.setValue("skillsUsed", [...skillsUsed, skillInput.trim()], {
-				shouldValidate: true,
-			});
-			setSkillInput("");
+	// Handle Enter key press for achievements
+	const handleAchievementInputKeyDown = (
+		e: React.KeyboardEvent<HTMLInputElement>
+	) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			handleAddAchievement();
 		}
 	};
 
-	const removeSkill = (index: number) => {
+	// Handle adding a skill
+	const handleAddSkill = () => {
+		const trimmedSkill = skillInput.trim();
+		if (trimmedSkill && !skills.includes(trimmedSkill)) {
+			const currentSkills = form.getValues("skillsUsed");
+			if (currentSkills.length < 20) {
+				form.setValue("skillsUsed", [...currentSkills, trimmedSkill]);
+				setSkillInput("");
+			}
+		}
+	};
+
+	// Handle removing a skill
+	const handleRemoveSkill = (skillToRemove: string) => {
+		const currentSkills = form.getValues("skillsUsed");
 		form.setValue(
 			"skillsUsed",
-			skillsUsed.filter((_, i) => i !== index),
-			{ shouldValidate: true }
+			currentSkills.filter((skill) => skill !== skillToRemove)
 		);
+	};
+
+	// Handle Enter key press for skills
+	const handleSkillInputKeyDown = (
+		e: React.KeyboardEvent<HTMLInputElement>
+	) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			handleAddSkill();
+		}
+	};
+
+	const handleSubmit = async (data: ExperienceFormValues) => {
+		setIsSubmitting(true);
+		try {
+			const experienceData: Experience = {
+				id: initialData?.id || crypto.randomUUID(),
+				order: initialData?.order || 0,
+				jobTitle: data.jobTitle,
+				company: data.company,
+				location: data.location,
+				startDate: new Date(data.startDate),
+				endDate: data.endDate ? new Date(data.endDate) : undefined,
+				currentlyWorking: data.currentlyWorking,
+				description: data.description || "",
+				achievements: data.achievements.filter((a) => a.trim() !== ""),
+				skillsUsed: data.skillsUsed.filter((s) => s.trim() !== ""),
+			};
+			onSubmit(experienceData);
+			onOpenChange(false);
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-				<DialogHeader>
-					<DialogTitle>
-						{experience ? "Edit Experience" : "Add Experience"}
-					</DialogTitle>
-					<DialogDescription>
-						Fill in the details about your work experience
-					</DialogDescription>
-				</DialogHeader>
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="max-w-3xl max-h-[90vh] p-0 gap-0">
+				<div className="px-6 pt-6 pb-4 border-b">
+					<DialogHeader>
+						<DialogTitle>
+							{mode === "add"
+								? "Add Work Experience"
+								: "Edit Work Experience"}
+						</DialogTitle>
+						<DialogDescription>
+							Add your professional work experience, achievements,
+							and skills used.
+						</DialogDescription>
+					</DialogHeader>
+				</div>
 
 				<Form {...form}>
 					<form
+						id="experience-form"
 						onSubmit={form.handleSubmit(handleSubmit)}
-						className="space-y-4"
+						className="flex flex-col"
 					>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<FormField
-								control={form.control}
-								name="jobTitle"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Job Title *</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Software Engineer"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+						<ScrollArea className="flex-1 overflow-auto px-6 py-6 max-h-[calc(90vh-180px)]">
+							<div className="space-y-6 pr-2">
+								{/* Job Details */}
+								<div className="space-y-4">
+									<h3 className="text-sm font-semibold">
+										Job Details
+									</h3>
 
-							<FormField
-								control={form.control}
-								name="company"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Company *</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Tech Corp"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+									<FormField
+										control={form.control}
+										name="jobTitle"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													Job Title{" "}
+													<span className="text-destructive">
+														*
+													</span>
+												</FormLabel>
+												<FormControl>
+													<Input
+														placeholder="e.g., Senior Software Engineer"
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 
-						<FormField
-							control={form.control}
-							name="location"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Location *</FormLabel>
-									<FormControl>
-										<Input
-											placeholder="San Francisco, CA"
-											{...field}
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<FormField
+											control={form.control}
+											name="company"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														Company{" "}
+														<span className="text-destructive">
+															*
+														</span>
+													</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="e.g., Google"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
 										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<FormField
-								control={form.control}
-								name="startDate"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Start Date *</FormLabel>
-										<FormControl>
-											<DatePicker
-												value={field.value}
-												onChange={field.onChange}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							{!currentlyWorking && (
-								<FormField
-									control={form.control}
-									name="endDate"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>End Date</FormLabel>
-											<FormControl>
-												<DatePicker
-													value={field.value || ""}
-													onChange={field.onChange}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							)}
-						</div>
-
-						<FormField
-							control={form.control}
-							name="currentlyWorking"
-							render={({ field }) => (
-								<FormItem className="flex items-center gap-2 space-y-0">
-									<FormControl>
-										<Checkbox
-											checked={field.value}
-											onCheckedChange={async (
-												checked
-											) => {
-												field.onChange(checked);
-												if (checked) {
-													form.setValue(
-														"endDate",
-														""
-													);
-												}
-												// Trigger full form validation
-												await form.trigger();
-											}}
+										<FormField
+											control={form.control}
+											name="location"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														Location{" "}
+														<span className="text-destructive">
+															*
+														</span>
+													</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="e.g., San Francisco, CA"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
 										/>
-									</FormControl>
-									<FormLabel className="!mt-0 cursor-pointer">
-										I currently work here
-									</FormLabel>
-								</FormItem>
-							)}
-						/>
+									</div>
 
-						<FormField
-							control={form.control}
-							name="description"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Description</FormLabel>
-									<FormControl>
-										<Textarea
-											placeholder="Describe your role and responsibilities..."
-											className="resize-none"
-											rows={3}
-											{...field}
+									<FormField
+										control={form.control}
+										name="description"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													Description (Optional)
+												</FormLabel>
+												<FormControl>
+													<Textarea
+														placeholder="Brief description of your role..."
+														className="min-h-[80px] resize-none"
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								{/* Duration */}
+								<div className="space-y-4">
+									<h3 className="text-sm font-semibold">
+										Duration
+									</h3>
+
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<FormField
+											control={form.control}
+											name="startDate"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														Start Date{" "}
+														<span className="text-destructive">
+															*
+														</span>
+													</FormLabel>
+													<FormControl>
+														<DatePicker
+															value={field.value}
+															onChange={
+																field.onChange
+															}
+															placeholder="Select start date"
+															disableFutureDates
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
 										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
 
-						<div>
-							<Label>Key Achievements</Label>
-							<div className="flex gap-2 mt-2">
-								<Input
-									placeholder="Add an achievement"
-									value={achievementInput}
-									onChange={(e) =>
-										setAchievementInput(e.target.value)
-									}
-									onKeyDown={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addAchievement();
-										}
-									}}
-								/>
-								<Button
-									type="button"
-									onClick={addAchievement}
-									disabled={!achievementInput.trim()}
-								>
-									<Plus className="h-4 w-4" />
-								</Button>
-							</div>
-							{achievements.length > 0 && (
-								<div className="space-y-2 mt-3">
-									{achievements.map((achievement, idx) => (
-										<div
-											key={idx}
-											className="flex items-center gap-2 text-sm bg-muted p-2 rounded"
-										>
-											<span className="flex-1">
-												{achievement}
+										<FormField
+											control={form.control}
+											name="endDate"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														End Date{" "}
+														{!currentlyWorking && (
+															<span className="text-destructive">
+																*
+															</span>
+														)}
+													</FormLabel>
+													<FormControl>
+														<DatePicker
+															value={
+																field.value ||
+																""
+															}
+															onChange={
+																field.onChange
+															}
+															placeholder="Select end date"
+															disabled={
+																currentlyWorking
+															}
+															disableFutureDates
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<FormField
+										control={form.control}
+										name="currentlyWorking"
+										render={({ field }) => (
+											<FormItem className="flex flex-row items-start space-x-3 space-y-0">
+												<FormControl>
+													<Checkbox
+														checked={field.value}
+														onCheckedChange={
+															field.onChange
+														}
+													/>
+												</FormControl>
+												<div className="space-y-1 leading-none">
+													<FormLabel>
+														I currently work here
+													</FormLabel>
+												</div>
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								{/* Achievements */}
+								<div className="space-y-4">
+									<div className="flex items-center justify-between">
+										<h3 className="text-sm font-semibold">
+											Achievements & Responsibilities{" "}
+											<span className="text-destructive">
+												*
 											</span>
-											<Button
-												type="button"
-												variant="ghost"
-												size="sm"
-												onClick={() =>
-													removeAchievement(idx)
-												}
-											>
-												<X className="h-3 w-3" />
-											</Button>
-										</div>
-									))}
-								</div>
-							)}
-						</div>
+										</h3>
+										<span className="text-xs text-muted-foreground">
+											{
+												achievements.filter((a) =>
+													a.trim()
+												).length
+											}
+											/10
+										</span>
+									</div>
 
-						<div>
-							<Label>Skills Used</Label>
-							<div className="flex gap-2 mt-2">
-								<Input
-									placeholder="Add a skill"
-									value={skillInput}
-									onChange={(e) =>
-										setSkillInput(e.target.value)
-									}
-									onKeyDown={(e) => {
-										if (e.key === "Enter") {
-											e.preventDefault();
-											addSkill();
-										}
-									}}
-								/>
+									{/* Input for adding achievements */}
+									<div className="flex gap-2">
+										<Input
+											placeholder="e.g., Led a team of 5 engineers, Increased performance by 40%..."
+											value={achievementInput}
+											onChange={(e) =>
+												setAchievementInput(
+													e.target.value
+												)
+											}
+											onKeyDown={
+												handleAchievementInputKeyDown
+											}
+											disabled={achievements.length >= 10}
+										/>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={handleAddAchievement}
+											disabled={
+												!achievementInput.trim() ||
+												achievements.length >= 10
+											}
+										>
+											<Plus className="h-4 w-4 mr-2" />
+											Add
+										</Button>
+									</div>
+
+									{/* Display achievements as list */}
+									{achievements.filter((a) => a.trim())
+										.length > 0 ? (
+										<div className="space-y-2">
+											{achievements
+												.filter((a) => a.trim())
+												.map((achievement, index) => (
+													<div
+														key={index}
+														className="flex items-start gap-3 px-3 py-1 border rounded-md bg-card hover:bg-accent/50 transition-colors group"
+													>
+														<div className="h-1.5 w-1.5 rounded-full bg-primary mt-2 shrink-0" />
+														<p className="flex-1 text-sm leading-relaxed">
+															{achievement}
+														</p>
+														<Button
+															type="button"
+															variant="ghost"
+															size="icon"
+															className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+															onClick={() =>
+																handleRemoveAchievement(
+																	achievement
+																)
+															}
+														>
+															<X className="h-4 w-4 text-destructive" />
+														</Button>
+													</div>
+												))}
+										</div>
+									) : (
+										<div className="p-4 border rounded-md bg-muted/20 text-center text-sm text-muted-foreground">
+											No achievements added yet. Type an
+											achievement and press Enter or click
+											Add.
+										</div>
+									)}
+
+									<FormField
+										control={form.control}
+										name="achievements"
+										render={() => (
+											<FormItem>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								{/* Skills */}
+								<div className="space-y-4">
+									<div className="flex items-center justify-between">
+										<h3 className="text-sm font-semibold">
+											Skills Used{" "}
+											<span className="text-destructive">
+												*
+											</span>
+										</h3>
+										<span className="text-xs text-muted-foreground">
+											{
+												skills.filter((s) => s.trim())
+													.length
+											}
+											/20
+										</span>
+									</div>
+
+									{/* Input for adding skills */}
+									<div className="flex gap-2">
+										<Input
+											placeholder="e.g., React, TypeScript, Node.js..."
+											value={skillInput}
+											onChange={(e) =>
+												setSkillInput(e.target.value)
+											}
+											onKeyDown={handleSkillInputKeyDown}
+											disabled={skills.length >= 20}
+										/>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={handleAddSkill}
+											disabled={
+												!skillInput.trim() ||
+												skills.length >= 20
+											}
+										>
+											<Plus className="h-4 w-4 mr-2" />
+											Add
+										</Button>
+									</div>
+
+									{/* Display skills as badges */}
+									{skills.filter((s) => s.trim()).length >
+									0 ? (
+										<div className="flex flex-wrap gap-2 rounded-md bg-muted/30">
+											{skills
+												.filter((s) => s.trim())
+												.map((skill, index) => (
+													<Badge
+														key={index}
+														className="pl-3 pr-1 py-1 text-sm gap-1"
+													>
+														<span>{skill}</span>
+														<Button
+															type="button"
+															variant="ghost"
+															size="icon"
+															className="h-4 w-4 p-0 hover:bg-transparent hover:text-destructive"
+															onClick={() =>
+																handleRemoveSkill(
+																	skill
+																)
+															}
+														>
+															<X className="h-3 w-3" />
+														</Button>
+													</Badge>
+												))}
+										</div>
+									) : (
+										<div className="p-4 border rounded-md bg-muted/20 text-center text-sm text-muted-foreground">
+											No skills added yet. Type a skill
+											and press Enter or click Add.
+										</div>
+									)}
+
+									<FormField
+										control={form.control}
+										name="skillsUsed"
+										render={() => (
+											<FormItem>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</div>
+						</ScrollArea>
+
+						<div className="px-6 py-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+							<DialogFooter>
 								<Button
 									type="button"
-									onClick={addSkill}
-									disabled={!skillInput.trim()}
+									variant="outline"
+									onClick={() => onOpenChange(false)}
+									disabled={isSubmitting}
 								>
-									<Plus className="h-4 w-4" />
+									Cancel
 								</Button>
-							</div>
-							{skillsUsed.length > 0 && (
-								<div className="flex flex-wrap gap-2 mt-3">
-									{skillsUsed.map((skill, idx) => (
-										<Badge key={idx} variant="secondary">
-											{skill}
-											<button
-												type="button"
-												onClick={() => removeSkill(idx)}
-												className="ml-1"
-											>
-												<X className="h-3 w-3" />
-											</button>
-										</Badge>
-									))}
-								</div>
-							)}
-						</div>
-
-						<div className="flex justify-end gap-2 pt-4">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => onOpenChange(false)}
-							>
-								Cancel
-							</Button>
-							<Button
-								type="submit"
-								disabled={!form.formState.isValid}
-							>
-								{experience ? "Update" : "Add"} Experience
-							</Button>
+								<Button
+									type="submit"
+									form="experience-form"
+									disabled={isSubmitting}
+								>
+									{isSubmitting
+										? "Saving..."
+										: mode === "add"
+										? "Add Experience"
+										: "Save Changes"}
+								</Button>
+							</DialogFooter>
 						</div>
 					</form>
 				</Form>

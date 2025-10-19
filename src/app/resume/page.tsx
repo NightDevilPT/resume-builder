@@ -6,7 +6,7 @@ import { ResumeProvider } from "@/components/providers/resume-form-provider";
 
 export default function CreateResumePage() {
 	return (
-		<main className="w-full h-auto flex justify-center items-center">
+		<main className="w-full h-full overflow-hidden flex justify-center items-center">
 			<ResumeProvider totalSteps={9}>
 				<ResumeStepper />
 			</ResumeProvider>
