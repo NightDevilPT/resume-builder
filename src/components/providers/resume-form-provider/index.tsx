@@ -347,6 +347,8 @@ interface ResumeContextType {
 	goToStep: (step: number) => void;
 	isLastStep: boolean;
 	isFirstStep: boolean;
+	templateId: string | null;
+	setTemplateId: (id: string) => void;
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
@@ -355,14 +357,19 @@ const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 interface ResumeProviderProps {
 	children: ReactNode;
 	totalSteps?: number;
+	initialTemplateId?: string | null;
 }
 
 export function ResumeProvider({
 	children,
 	totalSteps = 9,
+	initialTemplateId = null,
 }: ResumeProviderProps) {
 	const [resumeData, dispatch] = useReducer(resumeReducer, initialResumeData);
 	const [currentStep, setCurrentStep] = React.useState(0);
+	const [templateId, setTemplateId] = React.useState<string | null>(
+		initialTemplateId
+	);
 
 	const nextStep = () => {
 		// Validate current step before moving to next
@@ -423,6 +430,8 @@ export function ResumeProvider({
 		goToStep,
 		isLastStep,
 		isFirstStep,
+		templateId,
+		setTemplateId,
 	};
 
 	return (

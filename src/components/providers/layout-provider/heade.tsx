@@ -40,7 +40,7 @@ const navigation = [
 	},
 	{
 		name: "Templates",
-		href: "/templates",
+		href: "/templates/admin",
 		icon: FileText,
 		description: "Professional resume templates",
 	},
