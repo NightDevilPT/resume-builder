@@ -4,25 +4,16 @@ import React, { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ResumeProvider } from "@/components/providers/resume-form-provider";
 import { ResumeStepper } from "@/components/pages/resume-page";
+import { templateFactory } from "@/lib/templates/template-factory";
 
 export default function ResumeWithTemplatePage() {
 	const params = useParams();
 	const router = useRouter();
 	const templateId = params.templateId as string;
 
-	// Verify template exists
-	// useEffect(() => {
-	// 	const template = getTemplateById(templateId);
-	// 	if (!template) {
-	// 		// Template not found, redirect to templates page
-	// 		console.error(`Template with ID ${templateId} not found`);
-	// 		router.push("/templates");
-	// 	}
-	// }, [templateId, router]);
+	const template = templateFactory.getTemplate(templateId);
 
-	const template = null;
-
-	if (template) {
+	if (!template) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
 				<div className="text-center">

@@ -231,7 +231,7 @@ export function ProjectDialog({
 						</DialogTitle>
 						<DialogDescription>
 							Add projects, initiatives, campaigns, case studies,
-							or any significant work you've completed.
+							or any significant work you&apos;ve completed.
 						</DialogDescription>
 					</DialogHeader>
 				</div>

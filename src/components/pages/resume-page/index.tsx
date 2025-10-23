@@ -3,10 +3,13 @@
 import { toast } from "sonner";
 import { FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useState, useCallback } from "react";
 import { RESUME_STEPS } from "./steps/config";
+import { TemplateConfig } from "@/interfaces/templates";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ActionButtons } from "./components/ActionButtons";
 import { StepIndicator } from "./components/StepIndicator";
+import { templateFactory } from "@/lib/templates/template-factory";
 import { useResume } from "@/components/providers/resume-form-provider";
 
 export function ResumeStepper() {
@@ -18,7 +21,29 @@ export function ResumeStepper() {
 		isFirstStep,
 		isLastStep,
 		resumeData,
+		templateId,
 	} = useResume();
+
+	// State for template configuration
+	const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(null);
+
+	// Get the current template config
+	const currentConfig = templateConfig || templateFactory.getTemplate(templateId as string);
+
+	// Handle config changes
+	const handleConfigChange = useCallback((configChanges: Partial<TemplateConfig>) => {
+		if (currentConfig) {
+			const updatedConfig = {
+				...currentConfig,
+				...configChanges,
+				style: {
+					...currentConfig.style,
+					...configChanges.style,
+				},
+			};
+			setTemplateConfig(updatedConfig);
+		}
+	}, [currentConfig]);
 
 	const CurrentStepComponent = RESUME_STEPS[currentStep].component;
 
@@ -50,6 +75,8 @@ export function ResumeStepper() {
 		// TODO: Implement actual save to localStorage or backend
 		console.log("Saving resume data:", resumeData);
 	};
+
+	console.log(templateId);
 
 	return (
 		<div className="w-full h-full flex flex-col gap-3 md:gap-6 p-3 md:p-6 max-w-[1600px] mx-auto">
@@ -98,19 +125,16 @@ export function ResumeStepper() {
 				</Card>
 
 				{/* Preview Section */}
-				<Card className="hidden lg:flex flex-col items-center justify-center bg-muted/30">
-					<div className="text-center space-y-3 p-8">
-						<div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-							<FileText className="w-8 h-8 text-primary" />
-						</div>
-						<h3 className="text-xl font-semibold">
-							Resume Preview
-						</h3>
-						<p className="text-muted-foreground max-w-md">
-							Your resume preview will appear here as you fill in
-							the information. This feature is coming soon!
-						</p>
-					</div>
+				<Card className="hidden lg:flex flex-col bg-muted/30 h-full p-0 overflow-hidden">
+					{/* By using template factory render the component in this section preview */}
+					{templateFactory.renderComponent(
+						templateId as string,
+						resumeData,
+						{
+							config: currentConfig,
+							onConfigChange: handleConfigChange,
+						}
+					)}
 				</Card>
 			</div>
 		</div>

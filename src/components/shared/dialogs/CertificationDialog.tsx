@@ -49,7 +49,7 @@ export function CertificationDialog({
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<CertificationFormValues>({
-		resolver: zodResolver(certificationSchema) as any,
+		resolver: zodResolver(certificationSchema),
 		mode: "onBlur",
 		defaultValues: {
 			name: "",

@@ -49,7 +49,7 @@ export function AchievementDialog({
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<AchievementFormValues>({
-		resolver: zodResolver(achievementSchema) as any,
+		resolver: zodResolver(achievementSchema),
 		mode: "onBlur",
 		defaultValues: {
 			title: "",

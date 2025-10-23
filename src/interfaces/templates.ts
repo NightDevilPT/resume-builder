@@ -1,5 +1,9 @@
 import { ResumeData } from "./resume";
 
+export enum TemplateEnum {
+	CLASSIC = "classic-template",
+}
+
 // Template Layout Types
 export type LayoutType =
 	| "single-column"
@@ -19,6 +23,17 @@ export type SectionType =
 	| "projects"
 	| "certifications"
 	| "achievements";
+
+// Pricing configuration with multiple currencies
+export interface PricingConfig {
+	isPaid: boolean;
+	prices: {
+		INR?: number;
+		USD?: number;
+		EUR?: number;
+		GBP?: number;
+	};
+}
 
 // Section Configuration
 export interface SectionConfig {
@@ -72,16 +87,13 @@ export interface TemplateStyle {
 
 // Main Template Configuration
 export interface TemplateConfig {
-	id: string;
+	id: TemplateEnum;
 	name: string;
 	description: string;
-	thumbnail: string; // Preview image URL
 	category: string; // e.g., "Modern", "Classic", "Creative", "ATS-Friendly"
 
-	// Access Control
-	isPaid: boolean;
-	price: number; // 0 if free
-	tier: "free" | "basic" | "premium" | "enterprise";
+	// Pricing configuration
+	pricing: PricingConfig;
 
 	// Layout Configuration
 	layout: {
@@ -106,4 +118,5 @@ export interface TemplateConfig {
 	usageCount: number; // Track popularity
 	rating: number; // User ratings
 	tags: string[]; // For filtering
+	version: string; // Template version for updates
 }
