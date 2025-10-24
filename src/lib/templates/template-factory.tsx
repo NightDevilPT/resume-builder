@@ -142,17 +142,10 @@ export class TemplateFactory implements TemplateFactoryInterface {
 			switch (templateId) {
 				case "classic-template":
 					return (
-						<TemplateWrapper
-							className={options?.className || className}
-							style={options?.style}
+						<ClassicSkeletonTemplate
 							config={config}
-							onConfigChange={options?.onConfigChange}
-						>
-							<ClassicSkeletonTemplate
-								config={config}
-								className={className}
-							/>
-						</TemplateWrapper>
+							className={className}
+						/>
 					);
 				default:
 					console.error(

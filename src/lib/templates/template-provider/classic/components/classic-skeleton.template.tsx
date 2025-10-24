@@ -1,4 +1,6 @@
 import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { TemplateConfig } from "@/interfaces/templates";
 
 interface ClassicSkeletonProps {
@@ -10,183 +12,116 @@ const ClassicSkeletonTemplate: React.FC<ClassicSkeletonProps> = ({
 	config,
 	className = "",
 }) => {
+	const SectionHeader = ({ title }: { title: string }) => (
+		<>
+			<h3 className="text-[10px] font-bold mb-1 text-gray-700">
+				{title}
+			</h3>
+			<Separator className="mb-1" />
+		</>
+	);
+
+	const SkillTags = () => (
+		<div className="flex justify-start items-start gap-2 flex-wrap">
+			{Array.from({ length: 9 }).map((_, i) => (
+				<Skeleton
+					key={i}
+					className="w-[20px] h-[5px] border border-gray-300"
+				/>
+			))}
+		</div>
+	);
+
 	return (
 		<div
-			className={`classic-skeleton-template ${className}`}
-			style={{
-				width: "210mm", // A4 width
-				minHeight: "297mm", // A4 height
-				backgroundColor: config.style.backgroundColor,
-				padding: `${config.style.padding}px`,
-				fontFamily: config.style.fontFamily,
-				color: config.style.textColor,
-				boxShadow: config.style.showShadow
-					? "0 4px 6px rgba(0, 0, 0, 0.1)"
-					: "none",
-				borderRadius: `${config.style.borderRadius}px`,
-			}}
+			className={`classic-skeleton-template ${className} w-full max-w-[210mm] min-h-[297mm] bg-white p-4 font-sans text-black mx-auto flex flex-col items-center`}
 		>
 			{/* Header Section */}
-			<div style={{ marginBottom: `${config.style.sectionSpacing}px` }}>
-				<div
-					style={{
-						height: "20px",
-						backgroundColor: config.style.primaryColor,
-						borderRadius: "4px",
-						marginBottom: "8px",
-						width: "60%",
-					}}
-				/>
-				<div
-					style={{
-						height: "14px",
-						backgroundColor: config.style.secondaryColor,
-						borderRadius: "4px",
-						width: "40%",
-					}}
-				/>
-			</div>
-
-			{/* Summary Section */}
-			<div style={{ marginBottom: `${config.style.sectionSpacing}px` }}>
-				<div
-					style={{
-						height: "16px",
-						backgroundColor: config.style.primaryColor,
-						borderRadius: "4px",
-						marginBottom: "8px",
-						width: "30%",
-					}}
-				/>
-				<div
-					style={{
-						height: "12px",
-						backgroundColor: config.style.secondaryColor,
-						borderRadius: "4px",
-						marginBottom: "4px",
-						width: "100%",
-					}}
-				/>
-				<div
-					style={{
-						height: "12px",
-						backgroundColor: config.style.secondaryColor,
-						borderRadius: "4px",
-						width: "80%",
-					}}
-				/>
-			</div>
-
-			{/* Experience Section */}
-			<div style={{ marginBottom: `${config.style.sectionSpacing}px` }}>
-				<div
-					style={{
-						height: "16px",
-						backgroundColor: config.style.primaryColor,
-						borderRadius: "4px",
-						marginBottom: "12px",
-						width: "35%",
-					}}
-				/>
-				{[1, 2].map((item) => (
-					<div key={item} style={{ marginBottom: "16px" }}>
-						<div
-							style={{
-								height: "14px",
-								backgroundColor: config.style.textColor,
-								borderRadius: "4px",
-								marginBottom: "4px",
-								width: "50%",
-							}}
-						/>
-						<div
-							style={{
-								height: "12px",
-								backgroundColor: config.style.secondaryColor,
-								borderRadius: "4px",
-								marginBottom: "8px",
-								width: "30%",
-							}}
-						/>
-						<div
-							style={{
-								height: "10px",
-								backgroundColor: config.style.secondaryColor,
-								borderRadius: "4px",
-								marginBottom: "4px",
-								width: "90%",
-							}}
-						/>
-						<div
-							style={{
-								height: "10px",
-								backgroundColor: config.style.secondaryColor,
-								borderRadius: "4px",
-								width: "70%",
-							}}
-						/>
+			<div className="text-center mb-1 w-full">
+				<h1 className="text-[12px] font-bold mb-1 text-gray-800">
+					John Smith
+				</h1>
+				<div className="flex justify-center items-center flex-wrap gap-1 mb-1 text-[8px] text-gray-500">
+					<Skeleton className="w-[80px] h-[8px] border" />
+					<span>|</span>
+					<Skeleton className="w-[50px] h-[8px] border" />
+					<span>|</span>
+					<Skeleton className="w-[50px] h-[8px] border" />
+				</div>
+				<div className="text-left w-full">
+					<SectionHeader title="Professional Summary" />
+					<div className="space-y-1">
+						<Skeleton className="w-full h-[5px] border" />
+						<Skeleton className="w-full h-[5px] border" />
+						<Skeleton className="w-1/4 h-[5px] border" />
 					</div>
-				))}
+				</div>
 			</div>
 
-			{/* Education Section */}
-			<div style={{ marginBottom: `${config.style.sectionSpacing}px` }}>
-				<div
-					style={{
-						height: "16px",
-						backgroundColor: config.style.primaryColor,
-						borderRadius: "4px",
-						marginBottom: "12px",
-						width: "25%",
-					}}
-				/>
-				<div
-					style={{
-						height: "14px",
-						backgroundColor: config.style.textColor,
-						borderRadius: "4px",
-						marginBottom: "4px",
-						width: "45%",
-					}}
-				/>
-				<div
-					style={{
-						height: "12px",
-						backgroundColor: config.style.secondaryColor,
-						borderRadius: "4px",
-						width: "35%",
-					}}
-				/>
+			{/* Main Content Sections */}
+			<div className="w-full">
+				<SectionHeader title="Experience" />
+				<div className="space-y-1">
+					<div className="flex justify-between items-center gap-5 w-full">
+						<Skeleton className="w-1/2 h-[5px] border" />
+						<Skeleton className="w-1/5 h-[5px] border" />
+					</div>
+					<Skeleton className="w-2/3 h-[5px] border" />
+					<Skeleton className="w-2/3 h-[5px] border" />
+				</div>
 			</div>
 
-			{/* Skills Section */}
-			<div>
-				<div
-					style={{
-						height: "16px",
-						backgroundColor: config.style.primaryColor,
-						borderRadius: "4px",
-						marginBottom: "12px",
-						width: "20%",
-					}}
-				/>
-				<div
-					style={{
-						height: "12px",
-						backgroundColor: config.style.secondaryColor,
-						borderRadius: "4px",
-						marginBottom: "4px",
-						width: "85%",
-					}}
-				/>
-				<div
-					style={{
-						height: "12px",
-						backgroundColor: config.style.secondaryColor,
-						borderRadius: "4px",
-						width: "75%",
-					}}
-				/>
+			<div className="w-full">
+				<SectionHeader title="Education" />
+				<div className="space-y-1">
+					<div className="flex justify-between items-center gap-5 w-full">
+						<Skeleton className="w-1/2 h-[5px] border" />
+						<Skeleton className="w-1/5 h-[5px] border" />
+					</div>
+					<Skeleton className="w-2/3 h-[5px] border" />
+					<Skeleton className="w-2/3 h-[5px] border" />
+				</div>
+			</div>
+
+			<div className="w-full">
+				<SectionHeader title="Projects" />
+				<div className="space-y-1">
+					<div className="flex justify-between items-center gap-5 w-full">
+						<Skeleton className="w-1/2 h-[5px] border" />
+						<Skeleton className="w-1/5 h-[5px] border" />
+					</div>
+					<Skeleton className="w-2/3 h-[5px] border" />
+					<Skeleton className="w-2/3 h-[5px] border" />
+				</div>
+				<div className="space-y-1 mt-1">
+					<div className="flex justify-between items-center gap-5 w-full">
+						<Skeleton className="w-1/2 h-[5px] border" />
+						<Skeleton className="w-1/5 h-[5px] border" />
+					</div>
+					<Skeleton className="w-2/3 h-[5px] border" />
+					<Skeleton className="w-2/3 h-[5px] border" />
+				</div>
+			</div>
+
+			<div className="w-full">
+				<SectionHeader title="Skills" />
+				<SkillTags />
+			</div>
+
+			<div className="w-full mt-1">
+				<SectionHeader title="Certifications" />
+				<div className="space-y-1">
+					<Skeleton className="w-full h-[5px] border" />
+					<Skeleton className="w-full h-[5px] border" />
+				</div>
+			</div>
+
+			<div className="w-full mt-1">
+				<SectionHeader title="Achievements" />
+				<div className="space-y-1">
+					<Skeleton className="w-full h-[5px] border" />
+					<Skeleton className="w-full h-[5px] border" />
+				</div>
 			</div>
 		</div>
 	);

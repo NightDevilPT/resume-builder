@@ -30,53 +30,30 @@ const ClassicMainTemplate: React.FC<ClassicMainTemplateProps> = ({
 	} = data;
 
 	return (
-		<PageBreakWrapper>
-			<div
-				className="classic-main-template bg-white border"
-				style={{
-					width: "210mm", // A4 width
-					minHeight: "297mm", // A4 height
-					backgroundColor: config.style.backgroundColor,
-					padding: `${config.style.padding}px`,
-					fontFamily: config.style.fontFamily,
-					color: config.style.textColor,
-					fontSize: `${config.style.fontSize.body}px`,
-					lineHeight: "1.4",
-					margin: "0 auto",
-					maxWidth: "100%",
-					boxSizing: "border-box",
-				}}
-			>
-				{/* Personal Information Section */}
-				<ClassicPersonalInfo
-					personalInfo={personalInfo}
-					config={config}
-				/>
+		<PageBreakWrapper config={config}>
+			{/* Personal Information Section */}
+			<ClassicPersonalInfo personalInfo={personalInfo} config={config} />
 
-				{/* Experience Section */}
-				<ClassicExperience experience={experience} config={config} />
+			{/* Experience Section */}
+			<ClassicExperience experience={experience} config={config} />
 
-				{/* Education Section */}
-				<ClassicEducation education={education} config={config} />
+			{/* Education Section */}
+			<ClassicEducation education={education} config={config} />
 
-				{/* Projects Section */}
-				<ClassicProjects projects={projects} config={config} />
+			{/* Projects Section */}
+			<ClassicProjects projects={projects} config={config} />
 
-				{/* Skills Section */}
-				<ClassicSkills skills={skills} config={config} />
+			{/* Skills Section */}
+			<ClassicSkills skills={skills} config={config} />
 
-				{/* Certifications Section */}
-				<ClassicCertification
-					certifications={certifications}
-					config={config}
-				/>
+			{/* Certifications Section */}
+			<ClassicCertification
+				certifications={certifications}
+				config={config}
+			/>
 
-				{/* Achievements Section */}
-				<ClassicAchievement
-					achievements={achievements}
-					config={config}
-				/>
-			</div>
+			{/* Achievements Section */}
+			<ClassicAchievement achievements={achievements} config={config} />
 		</PageBreakWrapper>
 	);
 };
