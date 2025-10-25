@@ -164,9 +164,9 @@ export const classicConfig: TemplateConfig = {
 		textColor: "#374151",
 		backgroundColor: "#ffffff",
 
-		fontFamily: "Times New Roman, serif",
-		headingFont: "Times New Roman, serif",
-		bodyFont: "Times New Roman, serif",
+		fontFamily: "Arial, Helvetica, sans-serif",
+		headingFont: "Arial, Helvetica, sans-serif",
+		bodyFont: "Arial, Helvetica, sans-serif",
 		fontSize: {
 			heading: 20,
 			subheading: 14,
