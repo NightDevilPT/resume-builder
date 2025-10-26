@@ -63,7 +63,10 @@ const ClassicSkills: React.FC<ClassicSkillsProps> = ({ skills, config }) => {
 						}}
 					>
 						{skills.languages
-							.map((lang) => `${lang.language} (${lang.proficiency})`)
+							.map(
+								(lang) =>
+									`${lang.language} (${lang.proficiency})`
+							)
 							.join(", ")}
 					</span>
 				</div>

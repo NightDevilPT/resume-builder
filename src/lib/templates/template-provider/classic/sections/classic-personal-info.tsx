@@ -15,11 +15,12 @@ const ClassicPersonalInfo: React.FC<ClassicPersonalInfoProps> = ({
     <div style={{ textAlign: "center", marginBottom: "20px" }}>
       <h1
         style={{
-          fontSize: "20px",
+          fontSize: "25px",
           fontWeight: "bold",
           color: config.style.primaryColor,
-          margin: "0 0 8px 0",
+          margin: "0 0 5px 0",
           fontFamily: config.style.headingFont,
+          lineHeight: "1.2",
         }}
       >
         {personalInfo.fullName}
@@ -33,11 +34,12 @@ const ClassicPersonalInfo: React.FC<ClassicPersonalInfoProps> = ({
           justifyContent: "center",
           alignItems: "center",
           flexWrap: "wrap",
-          gap: "8px",
+          gap: "5px",
+          lineHeight: "1.5",
         }}
       >
         <span>{personalInfo.location}</span>
-        <span>|</span>
+        <span style={{ margin: "0 5px" }}>|</span>
         <a
           href={`mailto:${personalInfo.email}`}
           style={{
@@ -47,7 +49,7 @@ const ClassicPersonalInfo: React.FC<ClassicPersonalInfoProps> = ({
         >
           {personalInfo.email}
         </a>
-        <span>|</span>
+        <span style={{ margin: "0 5px" }}>|</span>
         <a
           href={`tel:${personalInfo.phone}`}
           style={{
@@ -59,7 +61,7 @@ const ClassicPersonalInfo: React.FC<ClassicPersonalInfoProps> = ({
         </a>
         {personalInfo.website && (
           <>
-            <span>|</span>
+            <span style={{ margin: "0 5px" }}>|</span>
             <a
               href={personalInfo.website}
               style={{
@@ -73,7 +75,7 @@ const ClassicPersonalInfo: React.FC<ClassicPersonalInfoProps> = ({
         )}
         {personalInfo.links?.map((link, index) => (
           <React.Fragment key={index}>
-            <span>|</span>
+            <span style={{ margin: "0 5px" }}>|</span>
             <a
               href={link.url}
               style={{

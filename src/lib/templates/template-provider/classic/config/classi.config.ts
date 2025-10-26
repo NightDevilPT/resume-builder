@@ -159,24 +159,24 @@ export const classicConfig: TemplateConfig = {
 
 	style: {
 		primaryColor: "#000000",
-		secondaryColor: "#374151",
-		accentColor: "#6B7280",
-		textColor: "#374151",
+		secondaryColor: "#000000",
+		accentColor: "#000000",
+		textColor: "#000000",
 		backgroundColor: "#ffffff",
 
-		fontFamily: "Arial, Helvetica, sans-serif",
-		headingFont: "Arial, Helvetica, sans-serif",
-		bodyFont: "Arial, Helvetica, sans-serif",
+		fontFamily: "Charter, Georgia, serif",
+		headingFont: "Charter, Georgia, serif",
+		bodyFont: "Charter, Georgia, serif",
 		fontSize: {
-			heading: 20,
+			heading: 25,
 			subheading: 14,
 			body: 11,
 			small: 10,
 		},
 
-		padding: 32,
-		margin: 16,
-		sectionSpacing: 16,
+		padding: 20,
+		margin: 20,
+		sectionSpacing: 12,
 
 		borderRadius: 0,
 		showBorders: false,

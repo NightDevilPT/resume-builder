@@ -50,7 +50,7 @@ const ClassicAchievement: React.FC<ClassicAchievementProps> = ({
 							marginBottom: "4px",
 						}}
 					>
-						<div>
+						<div style={{ flex: 1 }}>
 							<strong style={{ fontSize: "11px" }}>
 								{achievement.title}
 							</strong>
@@ -64,6 +64,8 @@ const ClassicAchievement: React.FC<ClassicAchievementProps> = ({
 							style={{
 								fontSize: "11px",
 								color: config.style.secondaryColor,
+								textAlign: "right",
+								minWidth: "120px",
 							}}
 						>
 							{formatDate(achievement.date)}

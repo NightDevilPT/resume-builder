@@ -50,7 +50,7 @@ const ClassicCertification: React.FC<ClassicCertificationProps> = ({
 							marginBottom: "4px",
 						}}
 					>
-						<div>
+						<div style={{ flex: 1 }}>
 							<strong style={{ fontSize: "11px" }}>
 								{cert.name}
 							</strong>
@@ -62,6 +62,8 @@ const ClassicCertification: React.FC<ClassicCertificationProps> = ({
 							style={{
 								fontSize: "11px",
 								color: config.style.secondaryColor,
+								textAlign: "right",
+								minWidth: "120px",
 							}}
 						>
 							{formatDate(cert.issueDate)} –{" "}

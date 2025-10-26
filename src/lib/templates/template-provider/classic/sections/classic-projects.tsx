@@ -41,7 +41,7 @@ const ClassicProjects: React.FC<ClassicProjectsProps> = ({
 				Projects
 			</h2>
 			{projects.map((project, index) => (
-				<div key={index} style={{ marginBottom: "12px" }}>
+				<div key={index} style={{ marginBottom: "8px" }}>
 					<div
 						style={{
 							display: "flex",
@@ -50,7 +50,7 @@ const ClassicProjects: React.FC<ClassicProjectsProps> = ({
 							marginBottom: "4px",
 						}}
 					>
-						<div>
+						<div style={{ flex: 1 }}>
 							<strong style={{ fontSize: "11px" }}>
 								{project.name}
 							</strong>
@@ -65,10 +65,23 @@ const ClassicProjects: React.FC<ClassicProjectsProps> = ({
 							style={{
 								fontSize: "11px",
 								color: config.style.secondaryColor,
+								textAlign: "right",
+								minWidth: "120px",
 							}}
 						>
-							{formatDate(project.startDate)} –{" "}
-							{formatDate(project.endDate)}
+							{project.links && project.links.length > 0 ? (
+								<a
+									href={project.links[0].url}
+									style={{
+										color: config.style.primaryColor,
+										textDecoration: "none",
+									}}
+								>
+									{project.links[0].url}
+								</a>
+							) : (
+								formatDate(project.startDate) + " – " + formatDate(project.endDate)
+							)}
 						</div>
 					</div>
 					{project.description && (
@@ -88,6 +101,7 @@ const ClassicProjects: React.FC<ClassicProjectsProps> = ({
 								margin: "4px 0 0 0",
 								paddingLeft: "15px",
 								fontSize: "11px",
+								listStyle: "disc",
 							}}
 						>
 							{project.highlights.map((highlight, hlIndex) => (

@@ -1,5 +1,5 @@
 import React from "react";
-import { ToolComponent } from "./tool-component";
+import { ToolComponent } from "./tools";
 import { TemplateConfig } from "@/interfaces/templates";
 
 interface TemplateWrapperProps {

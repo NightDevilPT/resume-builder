@@ -41,7 +41,7 @@ const ClassicEducation: React.FC<ClassicEducationProps> = ({
 				Education
 			</h2>
 			{education.map((edu, index) => (
-				<div key={index} style={{ marginBottom: "12px" }}>
+				<div key={index} style={{ marginBottom: "8px" }}>
 					<div
 						style={{
 							display: "flex",
@@ -50,7 +50,7 @@ const ClassicEducation: React.FC<ClassicEducationProps> = ({
 							marginBottom: "4px",
 						}}
 					>
-						<div>
+						<div style={{ flex: 1 }}>
 							<strong style={{ fontSize: "11px" }}>
 								{edu.degree}
 							</strong>
@@ -71,6 +71,8 @@ const ClassicEducation: React.FC<ClassicEducationProps> = ({
 							style={{
 								fontSize: "11px",
 								color: config.style.secondaryColor,
+								textAlign: "right",
+								minWidth: "120px",
 							}}
 						>
 							{formatDate(edu.startDate)} –{" "}
@@ -93,6 +95,7 @@ const ClassicEducation: React.FC<ClassicEducationProps> = ({
 								margin: "4px 0 0 0",
 								paddingLeft: "15px",
 								fontSize: "11px",
+								listStyle: "disc",
 							}}
 						>
 							{edu.achievements.map((achievement, achIndex) => (
