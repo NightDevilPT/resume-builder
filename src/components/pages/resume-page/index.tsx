@@ -1,15 +1,12 @@
 "use client";
 
 import { toast } from "sonner";
-import { FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useState, useCallback } from "react";
 import { RESUME_STEPS } from "./steps/config";
-import { TemplateConfig } from "@/interfaces/templates";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ActionButtons } from "./components/ActionButtons";
 import { StepIndicator } from "./components/StepIndicator";
-import { templateFactory } from "@/lib/templates/template-factory";
+import { FileText, Eye, Sparkles, FileSearch } from "lucide-react";
 import { useResume } from "@/components/providers/resume-form-provider";
 
 export function ResumeStepper() {
@@ -21,29 +18,7 @@ export function ResumeStepper() {
 		isFirstStep,
 		isLastStep,
 		resumeData,
-		templateId,
 	} = useResume();
-
-	// State for template configuration
-	const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(null);
-
-	// Get the current template config
-	const currentConfig = templateConfig || templateFactory.getTemplate(templateId as string);
-
-	// Handle config changes
-	const handleConfigChange = useCallback((configChanges: Partial<TemplateConfig>) => {
-		if (currentConfig) {
-			const updatedConfig = {
-				...currentConfig,
-				...configChanges,
-				style: {
-					...currentConfig.style,
-					...configChanges.style,
-				},
-			};
-			setTemplateConfig(updatedConfig);
-		}
-	}, [currentConfig]);
 
 	const CurrentStepComponent = RESUME_STEPS[currentStep].component;
 
@@ -73,10 +48,7 @@ export function ResumeStepper() {
 			description: "Your progress has been saved.",
 		});
 		// TODO: Implement actual save to localStorage or backend
-		console.log("Saving resume data:", resumeData);
 	};
-
-	console.log(templateId);
 
 	return (
 		<div className="w-full h-full flex flex-col gap-3 md:gap-6 p-3 md:p-6 max-w-[1600px] mx-auto">
@@ -126,15 +98,76 @@ export function ResumeStepper() {
 
 				{/* Preview Section */}
 				<Card className="hidden lg:flex flex-col bg-muted/30 h-full p-0 overflow-hidden">
-					{/* By using template factory render the component in this section preview */}
-					{templateFactory.renderComponent(
-						templateId as string,
-						resumeData,
-						{
-							config: currentConfig,
-							onConfigChange: handleConfigChange,
-						}
-					)}
+					{/* Coming Soon Preview */}
+					<div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+						{/* Animated Icon Stack */}
+						<div className="relative mb-8">
+							<div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+							<div className="relative bg-gradient-to-br from-primary/10 to-primary/5 p-8 rounded-full border-2 border-primary/20">
+								<Eye className="h-16 w-16 text-primary animate-pulse" />
+							</div>
+							<div className="absolute -top-2 -right-2 bg-background rounded-full p-2 border-2 border-primary/30 shadow-lg">
+								<Sparkles className="h-5 w-5 text-primary" />
+							</div>
+							<div className="absolute -bottom-2 -left-2 bg-background rounded-full p-2 border-2 border-primary/30 shadow-lg">
+								<FileSearch className="h-5 w-5 text-primary" />
+							</div>
+						</div>
+
+						{/* Content */}
+						<div className="space-y-4 max-w-md">
+							<h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+								Resume Preview
+							</h2>
+							<div className="space-y-2">
+								<p className="text-lg font-semibold text-foreground">
+									Coming Soon
+								</p>
+								<p className="text-sm text-muted-foreground leading-relaxed">
+									We&apos;re crafting an amazing live preview
+									experience for your resume. You&apos;ll be
+									able to see your changes in real-time as you
+									build!
+								</p>
+							</div>
+
+							{/* Feature List */}
+							<div className="pt-4 space-y-3 text-left">
+								<div className="flex items-start gap-3 text-sm">
+									<div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+										<Eye className="h-3 w-3 text-primary" />
+									</div>
+									<span className="text-muted-foreground">
+										Real-time preview of your resume
+									</span>
+								</div>
+								<div className="flex items-start gap-3 text-sm">
+									<div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+										<Sparkles className="h-3 w-3 text-primary" />
+									</div>
+									<span className="text-muted-foreground">
+										Multiple professional templates
+									</span>
+								</div>
+								<div className="flex items-start gap-3 text-sm">
+									<div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+										<FileSearch className="h-3 w-3 text-primary" />
+									</div>
+									<span className="text-muted-foreground">
+										Instant PDF export functionality
+									</span>
+								</div>
+							</div>
+						</div>
+
+						{/* Decorative Elements */}
+						<div className="absolute top-8 right-8 opacity-10">
+							<FileText className="h-32 w-32 text-primary" />
+						</div>
+						<div className="absolute bottom-8 left-8 opacity-10">
+							<FileText className="h-24 w-24 text-primary" />
+						</div>
+					</div>
 				</Card>
 			</div>
 		</div>
