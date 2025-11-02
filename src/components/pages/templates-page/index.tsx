@@ -8,8 +8,6 @@ import { TemplateConfig } from "@/interfaces/templates";
 import { apiClient } from "@/lib/services/api-client.service";
 import { TemplatesFilter } from "./components/TemplatesFilter";
 import { TemplatesContent } from "./components/TemplatesContent";
-import { Button } from "@/components/ui/button";
-import { Grid3x3, LayoutGrid, Sparkles } from "lucide-react";
 
 export default function TemplatesPage() {
 	const router = useRouter();
@@ -20,6 +18,10 @@ export default function TemplatesPage() {
 	const [priceFilter, setPriceFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("createdAt-desc");
 	const [gridColumns, setGridColumns] = useState<2 | 3>(3);
+	const [viewMode, setViewMode] = useState<"card" | "list">("card");
+	const [currentPage, setCurrentPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(0);
+	const itemsPerPage = 12;
 
 	useEffect(() => {
 		fetchTemplates();
@@ -49,11 +51,18 @@ export default function TemplatesPage() {
 		}
 	};
 
-	const filteredTemplates = templates
+	// Reset to page 1 when filters change
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [searchQuery, selectedCategory, priceFilter, sortBy]);
+
+	const allFilteredTemplates = templates
 		.filter((template) => {
 			const matchesSearch =
 				searchQuery === "" ||
-				template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				template.name
+					.toLowerCase()
+					.includes(searchQuery.toLowerCase()) ||
 				template.description
 					.toLowerCase()
 					.includes(searchQuery.toLowerCase());
@@ -61,7 +70,8 @@ export default function TemplatesPage() {
 			const matchesCategory =
 				selectedCategory === "all" ||
 				template.categories.some(
-					(cat) => cat.toLowerCase() === selectedCategory.toLowerCase()
+					(cat) =>
+						cat.toLowerCase() === selectedCategory.toLowerCase()
 				);
 
 			const matchesPrice =
@@ -86,6 +96,19 @@ export default function TemplatesPage() {
 			return order === "desc" ? -comparison : comparison;
 		});
 
+	// Calculate pagination
+	const totalItems = allFilteredTemplates.length;
+	const calculatedTotalPages = Math.ceil(totalItems / itemsPerPage);
+
+	useEffect(() => {
+		setTotalPages(calculatedTotalPages);
+	}, [calculatedTotalPages]);
+
+	// Get current page templates
+	const startIndex = (currentPage - 1) * itemsPerPage;
+	const endIndex = startIndex + itemsPerPage;
+	const filteredTemplates = allFilteredTemplates.slice(startIndex, endIndex);
+
 	const activeFiltersCount =
 		(searchQuery ? 1 : 0) +
 		(selectedCategory !== "all" ? 1 : 0) +
@@ -102,65 +125,39 @@ export default function TemplatesPage() {
 	};
 
 	return (
-		<div className="h-full overflow-hidden bg-background flex flex-col">
+		<div className="h-full bg-background flex flex-col">
 			{/* Main Content */}
-			<div className="container mx-auto px-6 py-8 flex-1 overflow-hidden">
-				<div className="h-full grid grid-cols-[300px_1fr] gap-6 overflow-hidden">
+			<div className="container mx-auto px-6 py-8 overflow-hidden">
+				<div className="h-full grid grid-cols-[300px_1fr] gap-6">
 					{/* Filters Sidebar */}
-					<div className="overflow-hidden">
-						<TemplatesFilter
-							searchQuery={searchQuery}
-							setSearchQuery={setSearchQuery}
-							selectedCategory={selectedCategory}
-							setSelectedCategory={setSelectedCategory}
-							priceFilter={priceFilter}
-							setPriceFilter={setPriceFilter}
-							sortBy={sortBy}
-							setSortBy={setSortBy}
-							activeFiltersCount={activeFiltersCount}
-							onClearFilters={handleClearFilters}
-						/>
-					</div>
-
-					{/* Templates Grid */}
-					<div className="overflow-hidden flex flex-col gap-4">
-						{/* Header with Grid Toggle */}
-						<div className="flex items-center justify-between">
-							<p className="text-sm text-muted-foreground">
-								<span className="font-semibold text-foreground">
-									{filteredTemplates.length}
-								</span>{" "}
-								{filteredTemplates.length === 1 ? "template" : "templates"}
-							</p>
-							<div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
-								<Button
-									variant={gridColumns === 2 ? "default" : "ghost"}
-									size="icon"
-									onClick={() => setGridColumns(2)}
-									className="h-8 w-8"
-								>
-									<LayoutGrid className="h-4 w-4" />
-								</Button>
-								<Button
-									variant={gridColumns === 3 ? "default" : "ghost"}
-									size="icon"
-									onClick={() => setGridColumns(3)}
-									className="h-8 w-8"
-								>
-									<Grid3x3 className="h-4 w-4" />
-								</Button>
-							</div>
-						</div>
-
-						{/* Content */}
-						<TemplatesContent
-							templates={filteredTemplates}
-							isLoading={isLoading}
-							gridColumns={gridColumns}
-							onTemplateClick={handleTemplateClick}
-							onClearFilters={handleClearFilters}
-						/>
-					</div>
+					<TemplatesFilter
+						viewMode={viewMode}
+						setViewMode={setViewMode}
+						gridColumns={gridColumns}
+						setGridColumns={setGridColumns}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+						selectedCategory={selectedCategory}
+						setSelectedCategory={setSelectedCategory}
+						priceFilter={priceFilter}
+						setPriceFilter={setPriceFilter}
+						sortBy={sortBy}
+						setSortBy={setSortBy}
+						activeFiltersCount={activeFiltersCount}
+						onClearFilters={handleClearFilters}
+					/>
+					{/* Content */}
+					<TemplatesContent
+						templates={filteredTemplates}
+						isLoading={isLoading}
+						gridColumns={gridColumns}
+						viewMode={viewMode}
+						currentPage={currentPage}
+						totalPages={totalPages}
+						onPageChange={setCurrentPage}
+						onTemplateClick={handleTemplateClick}
+						onClearFilters={handleClearFilters}
+					/>
 				</div>
 			</div>
 		</div>

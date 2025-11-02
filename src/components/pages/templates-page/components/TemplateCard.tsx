@@ -1,10 +1,9 @@
 "use client";
 
-import { TemplateConfig } from "@/interfaces/templates";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Eye, Heart, Star, Sparkles, TrendingUp } from "lucide-react";
+import { TemplateConfig } from "@/interfaces/templates";
+import { Eye, Star, TrendingUp, ArrowRight, Gem } from "lucide-react";
 import { TemplatePreview } from "@/components/pages/resume-layout-page/components/TemplatePreview";
 
 interface TemplateCardProps {
@@ -16,7 +15,7 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
 	const { name, description, pricing, metadata, categories } = template;
 
 	return (
-		<Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer bg-gradient-to-br from-background via-background to-muted/20 p-0">
+		<Card className="group relative overflow-hidden border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer bg-gradient-to-br from-background via-background to-muted/20 p-0">
 			{/* Animated gradient overlay */}
 			<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -38,38 +37,78 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
 						</div>
 					</div>
 
-					{/* Hover Overlay */}
-					<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
-						<div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-							<div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-								<Eye className="h-14 w-14 text-white drop-shadow-lg" />
+					{/* Hover Overlay with Details */}
+					<div className="absolute inset-0 bg-gradient-to-t from-foreground/95 via-foreground/70 to-foreground/40 opacity-0 group-hover:opacity-100 transition-all duration-500">
+						<div className="absolute inset-0 p-6 flex flex-col justify-between">
+							{/* Top: Icon */}
+							<div className="flex justify-center">
+								<div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+									<Eye className="h-12 w-12 text-background drop-shadow-lg" />
+								</div>
 							</div>
-							<div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
-								<p className="text-white font-bold text-xl tracking-wide drop-shadow-lg">
-									Use This Template
-								</p>
-								<p className="text-white/80 text-sm mt-1 text-center">
-									Click to get started
-								</p>
+
+							{/* Bottom: Details */}
+							<div className="space-y-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
+								{/* Title */}
+								<div>
+									<h3 className="text-background font-bold text-xl line-clamp-2 drop-shadow-lg">
+										{name}
+									</h3>
+									<p className="text-background/80 text-sm mt-2 line-clamp-3 leading-relaxed">
+										{description}
+									</p>
+								</div>
+
+								{/* Categories */}
+								<div className="flex flex-wrap gap-2">
+									{categories.slice(0, 4).map((category) => (
+										<Badge
+											key={category}
+											variant="secondary"
+											className="bg-background/20 text-background border-0 backdrop-blur-sm"
+										>
+											{category}
+										</Badge>
+									))}
+								</div>
+
+								{/* Stats */}
+								<div className="flex items-center justify-between text-background/90 text-sm pt-2 border-t border-background/20">
+									<div className="flex items-center gap-4">
+										<div className="flex items-center gap-1.5">
+											<Eye className="h-4 w-4" />
+											<span className="font-semibold">
+												{metadata.usageCount.toLocaleString()}
+											</span>
+										</div>
+										<div className="flex items-center gap-1.5">
+											<Star className="h-4 w-4 fill-yellow-500 text-primary" />
+											<span className="font-semibold">
+												{metadata.rating.toFixed(1)}
+											</span>
+										</div>
+									</div>
+									<ArrowRight className="h-5 w-5 animate-pulse" />
+								</div>
 							</div>
 						</div>
 					</div>
 
 					{/* Top Badges */}
-					<div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-2">
+					<div className="absolute top-4 left-4 right-4 flex items-center justify-start gap-2 z-10">
 						{metadata.usageCount > 50 && (
-							<Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-lg gap-1">
-								<TrendingUp className="h-3 w-3" />
+							<Badge className="border-0 shadow-lg">
+								<TrendingUp className="h-5 w-5" />
 								Popular
 							</Badge>
 						)}
-						<div className="ml-auto">
+						<div>
 							{pricing.isPaid ? (
-								<Badge className="bg-gradient-to-r from-primary to-primary/80 text-white border-0 shadow-lg font-semibold">
-									${pricing.price}
+								<Badge className="border-0 shadow-lg">
+									<Gem className="h-5 w-5" />$ {pricing.price}
 								</Badge>
 							) : (
-								<Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg font-semibold">
+								<Badge className="border shadow-lg font-semibold">
 									FREE
 								</Badge>
 							)}
