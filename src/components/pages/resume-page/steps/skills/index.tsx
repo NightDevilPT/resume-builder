@@ -31,7 +31,7 @@ import { Separator } from "@/components/ui/separator";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Code, Plus, Trash2, X, Languages, Star } from "lucide-react";
 import { useResume } from "@/components/providers/resume-form-provider";
-import { skillsSchema, type SkillsFormValues } from "@/lib/validations/skills";
+import { skillsSchema, type SkillsFormValues } from "@/lib/validations/skillsvalidations";
 
 export function SkillsPage() {
 	const { resumeData, dispatch, nextStep } = useResume();

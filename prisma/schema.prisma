@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Template Model - Maps to TemplateConfig interface
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  thumbnail   String   // URL to thumbnail image
+  categories  String[] // Array of categories: "Modern", "Classic", "Creative", etc.
+
+  // Pricing (stored as JSON for flexibility)
+  pricing Json // PricingInfo: { isPaid, price, tier }
+
+  // Layout and sections (stored as JSON)
+  layout Json // LayoutConfig: { type, columnRatio, gap, sections }
+
+  // Styling configurations (stored as JSON)
+  colors     Json // ColorScheme
+  typography Json // Typography
+  spacing    Json // Spacing
+  borders    Json // BorderConfig
+
+  // Section-specific configurations (stored as JSON)
+  personalInfoConfig    Json // PersonalInfoConfig
+  experienceConfig      Json // ExperienceConfig
+  educationConfig       Json // EducationConfig
+  skillsConfig          Json // SkillsConfig
+  projectsConfig        Json // ProjectsConfig
+  certificationsConfig  Json // CertificationsConfig
+  achievementsConfig    Json // AchievementsConfig
+
+  // Metadata
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isPublished  Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  usageCount   Int       @default(0)
+  rating       Float     @default(0)
+  tags         String[]  // Array of tags
+  previewImage String?   // Optional preview image URL
+
+  // Relations
+  resumes Resume[]
+
+  // Indexes for better query performance
+  @@index([isPublished, isActive])
+  @@index([categories])
+  @@index([tags])
+  @@index([createdAt])
+  @@map("templates")
+}
+
+// User Model (for future authentication)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("user") // "user", "admin"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  resumes Resume[]
+
+  @@map("users")
+}
+
+// Resume Model - For saving user resumes
+model Resume {
+  id          String   @id @default(cuid())
+  userId      String?  // Optional - allow anonymous resumes
+  templateId  String?  // Reference to original template (for reference only)
+  
+  // Resume data (stored as JSON matching ResumeData interface)
+  name        String   // Resume name
+  description String?  // Resume description
+  data        Json     // Complete resume data
+  
+  // Template snapshot - stores complete template config at creation time
+  // This ensures resume stays consistent even if template is updated
+  templateConfig Json?  // Full TemplateConfig snapshot
+  templateVersion String?  // Version of the template at creation time
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isPublic  Boolean  @default(false)
+
+  // Relations
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  template Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([createdAt])
+  @@map("resumes")
+}

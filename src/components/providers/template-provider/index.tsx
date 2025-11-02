@@ -3,6 +3,9 @@
 
 import { TemplateConfig } from "@/interfaces/templates";
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import { apiClient, ApiError } from "@/lib/services/api-client.service";
+import { API_URLS } from "@/constants/api-urls";
+import type { CreateTemplateInput } from "@/lib/validations/template.validations";
 
 // Sync status for persistence
 export type SyncStatus = "idle" | "syncing" | "synced" | "error";
@@ -537,6 +540,23 @@ interface TemplateContextType {
 	hasUnsavedChanges: (templateId: string) => boolean;
 	hasAnyUnsavedChanges: () => boolean;
 	getUnsavedTemplateIds: () => string[];
+
+	// API actions
+	saveTemplate: (data: CreateTemplateInput) => Promise<TemplateConfig | null>;
+	fetchTemplates: (params?: {
+		page?: number;
+		pageSize?: number;
+		category?: string;
+		isPaid?: boolean;
+		isPublished?: boolean;
+		search?: string;
+	}) => Promise<void>;
+	fetchTemplateById: (id: string) => Promise<TemplateConfig | null>;
+	updateTemplateById: (
+		id: string,
+		data: Partial<CreateTemplateInput>
+	) => Promise<TemplateConfig | null>;
+	deleteTemplateById: (id: string) => Promise<boolean>;
 }
 
 const TemplateContext = createContext<TemplateContextType | undefined>(
@@ -724,6 +744,208 @@ export function TemplateProvider({
 		return ids;
 	}, [state.unsavedChanges]);
 
+	// API Action: Save template to database
+	const saveTemplate = React.useCallback(
+		async (data: CreateTemplateInput): Promise<TemplateConfig | null> => {
+			try {
+				// Start saving
+				dispatch({ type: "START_SAVING" });
+				dispatch({ type: "SET_ERROR", payload: null });
+
+				// Call API to create template
+				const response = await apiClient.post<TemplateConfig>(
+					API_URLS.TEMPLATE,
+					data
+				);
+
+				if (response.success && response.data) {
+					// Add template to state
+					dispatch({ type: "ADD_TEMPLATE", payload: response.data });
+
+					// Mark as saved
+					dispatch({
+						type: "FINISH_SAVING",
+						payload: { templateId: response.data.id, success: true },
+					});
+					dispatch({ type: "SET_LAST_SYNCED" });
+
+					return response.data;
+				}
+
+				throw new Error("Failed to save template");
+			} catch (error) {
+				// Handle error
+				const errorMessage =
+					error instanceof ApiError
+						? error.message
+						: "Failed to save template";
+
+				dispatch({ type: "SET_ERROR", payload: errorMessage });
+				dispatch({
+					type: "FINISH_SAVING",
+					payload: { templateId: "", success: false },
+				});
+
+				return null;
+			}
+		},
+		[]
+	);
+
+	// API Action: Fetch all templates
+	const fetchTemplates = React.useCallback(
+		async (params?: {
+			page?: number;
+			pageSize?: number;
+			category?: string;
+			isPaid?: boolean;
+			isPublished?: boolean;
+			search?: string;
+		}): Promise<void> => {
+			try {
+				dispatch({ type: "SET_LOADING", payload: true });
+				dispatch({ type: "SET_ERROR", payload: null });
+
+				const response = await apiClient.getAll<TemplateConfig>(
+					API_URLS.TEMPLATE,
+					params
+				);
+
+				if (response.success && response.data) {
+					const totalCount = response.meta?.totalItems || 0;
+					dispatch({
+						type: "SET_TEMPLATES_WITH_COUNT",
+						payload: { templates: response.data, totalCount },
+					});
+				}
+			} catch (error) {
+				const errorMessage =
+					error instanceof ApiError
+						? error.message
+						: "Failed to fetch templates";
+				dispatch({ type: "SET_ERROR", payload: errorMessage });
+			} finally {
+				dispatch({ type: "SET_LOADING", payload: false });
+			}
+		},
+		[]
+	);
+
+	// API Action: Fetch template by ID
+	const fetchTemplateById = React.useCallback(
+		async (id: string): Promise<TemplateConfig | null> => {
+			try {
+				dispatch({ type: "SET_LOADING", payload: true });
+				dispatch({ type: "SET_ERROR", payload: null });
+
+				const response = await apiClient.get<TemplateConfig>(
+					`${API_URLS.TEMPLATE}/${id}`
+				);
+
+				if (response.success && response.data) {
+					dispatch({
+						type: "SET_SELECTED_TEMPLATE",
+						payload: response.data,
+					});
+					return response.data;
+				}
+
+				return null;
+			} catch (error) {
+				const errorMessage =
+					error instanceof ApiError
+						? error.message
+						: "Failed to fetch template";
+				dispatch({ type: "SET_ERROR", payload: errorMessage });
+				return null;
+			} finally {
+				dispatch({ type: "SET_LOADING", payload: false });
+			}
+		},
+		[]
+	);
+
+	// API Action: Update template
+	const updateTemplateById = React.useCallback(
+		async (
+			id: string,
+			data: Partial<CreateTemplateInput>
+		): Promise<TemplateConfig | null> => {
+			try {
+				dispatch({ type: "START_SAVING" });
+				dispatch({ type: "SET_ERROR", payload: null });
+
+				const response = await apiClient.put<TemplateConfig>(
+					`${API_URLS.TEMPLATE}/${id}`,
+					data
+				);
+
+				if (response.success && response.data) {
+					// Update template in state
+					dispatch({
+						type: "UPDATE_TEMPLATE",
+						payload: { id, data: response.data },
+					});
+
+					// Mark as saved
+					dispatch({
+						type: "FINISH_SAVING",
+						payload: { templateId: id, success: true },
+					});
+					dispatch({ type: "SET_LAST_SYNCED" });
+
+					return response.data;
+				}
+
+				throw new Error("Failed to update template");
+			} catch (error) {
+				const errorMessage =
+					error instanceof ApiError
+						? error.message
+						: "Failed to update template";
+				dispatch({ type: "SET_ERROR", payload: errorMessage });
+				dispatch({
+					type: "FINISH_SAVING",
+					payload: { templateId: id, success: false },
+				});
+				return null;
+			}
+		},
+		[]
+	);
+
+	// API Action: Delete template
+	const deleteTemplateById = React.useCallback(
+		async (id: string): Promise<boolean> => {
+			try {
+				dispatch({ type: "SET_LOADING", payload: true });
+				dispatch({ type: "SET_ERROR", payload: null });
+
+				const response = await apiClient.delete<{ message: string }>(
+					`${API_URLS.TEMPLATE}/${id}`
+				);
+
+				if (response.success) {
+					// Remove template from state
+					dispatch({ type: "DELETE_TEMPLATE", payload: id });
+					return true;
+				}
+
+				return false;
+			} catch (error) {
+				const errorMessage =
+					error instanceof ApiError
+						? error.message
+						: "Failed to delete template";
+				dispatch({ type: "SET_ERROR", payload: errorMessage });
+				return false;
+			} finally {
+				dispatch({ type: "SET_LOADING", payload: false });
+			}
+		},
+		[]
+	);
+
 	const value: TemplateContextType = {
 		// State
 		templates: state.templates,
@@ -762,6 +984,13 @@ export function TemplateProvider({
 		hasUnsavedChanges,
 		hasAnyUnsavedChanges,
 		getUnsavedTemplateIds,
+
+		// API actions
+		saveTemplate,
+		fetchTemplates,
+		fetchTemplateById,
+		updateTemplateById,
+		deleteTemplateById,
 	};
 
 	return (

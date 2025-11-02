@@ -20,7 +20,7 @@ import {
 import {
 	certificationSchema,
 	type CertificationFormValues,
-} from "@/lib/validations/certification";
+} from "@/lib/validations/certification.validations";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";

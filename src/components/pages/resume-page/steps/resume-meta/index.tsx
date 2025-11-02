@@ -20,7 +20,7 @@ import {
 import {
 	resumeMetaSchema,
 	type ResumeMetaFormValues,
-} from "@/lib/validations/resume";
+} from "@/lib/validations/resume.validations";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

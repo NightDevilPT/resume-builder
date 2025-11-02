@@ -21,7 +21,7 @@ import {
 import {
 	experienceSchema,
 	type ExperienceFormValues,
-} from "@/lib/validations/experience";
+} from "@/lib/validations/experience.validations";
 import { Plus, X } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";

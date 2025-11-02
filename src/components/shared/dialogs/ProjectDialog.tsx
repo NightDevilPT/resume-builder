@@ -20,7 +20,7 @@ import {
 import {
 	projectSchema,
 	type ProjectFormValues,
-} from "@/lib/validations/project";
+} from "@/lib/validations/project.validations";
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

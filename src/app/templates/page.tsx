@@ -1,9 +1,5 @@
-import React from 'react'
+import TemplatesPage from "@/components/pages/templates-page";
 
-const TemplatesPage = () => {
-  return (
-	<div>TemplatesPage</div>
-  )
+export default function Page() {
+	return <TemplatesPage />;
 }
-
-export default TemplatesPage

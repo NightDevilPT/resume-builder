@@ -28,7 +28,7 @@ import {
 import {
 	educationSchema,
 	type EducationFormValues,
-} from "@/lib/validations/education";
+} from "@/lib/validations/education.validations";
 import { Plus, X } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";

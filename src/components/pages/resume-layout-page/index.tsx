@@ -33,7 +33,7 @@ import { defaultTemplateConfig } from "@/constants/default-template";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminTemplateCreator() {
-	const { dispatch, isSaving } = useTemplate();
+	const { dispatch, isSaving, saveTemplate, updateTemplateById } = useTemplate();
 	const [activeTab, setActiveTab] = useState("basic");
 	const [previewMode, setPreviewMode] = useState(false);
 
@@ -43,6 +43,9 @@ export default function AdminTemplateCreator() {
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 	const [isDraggingActive, setIsDraggingActive] = useState(false);
 	const previewContainerRef = useRef<HTMLDivElement>(null);
+
+	// Track current template ID (null if creating new)
+	const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
 
 	// Local template state (will be saved to provider on submit)
 	const [templateConfig, setTemplateConfig] = useState<
@@ -125,23 +128,45 @@ export default function AdminTemplateCreator() {
 			return;
 		}
 
-		const newTemplate: TemplateConfig = {
-			id: `template-${Date.now()}`,
-			...templateConfig,
-			metadata: {
-				createdBy: "admin",
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
-				isPublished: false,
-				isActive: false,
-				usageCount: 0,
-				rating: 0,
-				tags: [],
-			},
-		} as TemplateConfig;
+		if (!templateConfig.description) {
+			toast.error("Please enter a template description");
+			return;
+		}
 
-		dispatch(templateActions.addTemplate(newTemplate));
-		toast.success("Template saved as draft!");
+		try {
+			if (currentTemplateId) {
+				// Update existing draft
+				const updated = await updateTemplateById(currentTemplateId, {
+					...templateConfig,
+					isPublished: false,
+					isActive: false,
+				} as any);
+
+				if (updated) {
+					toast.success("Template draft updated successfully!");
+				} else {
+					toast.error("Failed to update template draft");
+				}
+			} else {
+				// Create new draft
+				const created = await saveTemplate({
+					...templateConfig,
+					createdBy: "admin",
+					tags: templateConfig.metadata?.tags || [],
+					isPublished: false,
+					isActive: false,
+				} as any);
+
+				if (created) {
+					setCurrentTemplateId(created.id);
+					toast.success("Template saved as draft!");
+				} else {
+					toast.error("Failed to save template draft");
+				}
+			}
+		} catch (error) {
+			toast.error("An error occurred while saving the template");
+		}
 	};
 
 	const handlePublish = async () => {
@@ -150,24 +175,45 @@ export default function AdminTemplateCreator() {
 			return;
 		}
 
-		const newTemplate: TemplateConfig = {
-			id: `template-${Date.now()}`,
-			...templateConfig,
-			metadata: {
-				createdBy: "admin",
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
-				isPublished: true,
-				isActive: true,
-				usageCount: 0,
-				rating: 0,
-				tags: [],
-			},
-		} as TemplateConfig;
+		if (!templateConfig.description) {
+			toast.error("Please enter a template description");
+			return;
+		}
 
-		dispatch(templateActions.addTemplate(newTemplate));
-		dispatch(templateActions.publishTemplate(newTemplate.id));
-		toast.success("Template published successfully!");
+		try {
+			if (currentTemplateId) {
+				// Update existing template and publish it
+				const updated = await updateTemplateById(currentTemplateId, {
+					...templateConfig,
+					isPublished: true,
+					isActive: true,
+				} as any);
+
+				if (updated) {
+					toast.success("Template published successfully!");
+				} else {
+					toast.error("Failed to publish template");
+				}
+			} else {
+				// Create new template and publish it
+				const created = await saveTemplate({
+					...templateConfig,
+					createdBy: "admin",
+					tags: templateConfig.metadata?.tags || [],
+					isPublished: true,
+					isActive: true,
+				} as any);
+
+				if (created) {
+					setCurrentTemplateId(created.id);
+					toast.success("Template published successfully!");
+				} else {
+					toast.error("Failed to publish template");
+				}
+			}
+		} catch (error) {
+			toast.error("An error occurred while publishing the template");
+		}
 	};
 
 	const tabs = [
@@ -188,12 +234,20 @@ export default function AdminTemplateCreator() {
 						<Settings className="h-5 w-5 md:h-7 md:w-7 text-primary" />
 					</div>
 					<div className="min-w-0 flex-1">
-						<h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight truncate">
-							Create Resume Template
-						</h1>
+						<div className="flex items-center gap-2">
+							<h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight truncate">
+								{currentTemplateId ? "Edit" : "Create"} Resume Template
+							</h1>
+							{currentTemplateId && (
+								<span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+									Editing
+								</span>
+							)}
+						</div>
 						<p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-							Design a custom resume template with full control
-							over layout, colors, and typography
+							{currentTemplateId
+								? "Update your template and republish changes"
+								: "Design a custom resume template with full control over layout, colors, and typography"}
 						</p>
 					</div>
 				</div>
@@ -300,7 +354,7 @@ export default function AdminTemplateCreator() {
 								) : (
 									<Save className="h-4 w-4" />
 								)}
-								Save Draft
+								{currentTemplateId ? "Update Draft" : "Save Draft"}
 							</Button>
 
 							<Button
@@ -313,7 +367,7 @@ export default function AdminTemplateCreator() {
 								) : (
 									<Save className="h-4 w-4" />
 								)}
-								Publish
+								{currentTemplateId ? "Update & Publish" : "Publish"}
 							</Button>
 						</div>
 					</div>
