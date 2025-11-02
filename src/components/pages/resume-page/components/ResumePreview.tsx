@@ -12,16 +12,15 @@ import { TemplatePreview } from "@/components/pages/resume-layout-page/component
  * Displays the user's resume data using the selected template with zoom and drag controls
  */
 export function ResumePreview() {
-	const { resumeData } = useResume();
+	const { resumeData, templateConfig } = useResume();
 	const [zoom, setZoom] = useState(100);
 	const [position, setPosition] = useState({ x: 0, y: 0 });
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 	const [isDraggingActive, setIsDraggingActive] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	// TODO: Get selected template from TemplateProvider or URL params
-	// For now, use the default template
-	const selectedTemplate = defaultTemplateConfig;
+	// Use fetched template config or fall back to default template
+	const selectedTemplate = templateConfig || defaultTemplateConfig;
 
 	// Zoom handlers
 	const handleZoomIn = () => {

@@ -11,9 +11,19 @@ import {
 	ResumeData,
 	Skills,
 } from "@/interfaces/resume";
+import React, {
+	createContext,
+	useContext,
+	useReducer,
+	ReactNode,
+	useState,
+	useEffect,
+} from "react";
+import { TemplateConfig } from "@/interfaces/templates";
 import { getStepValidation } from "@/lib/utils/resume-helpers";
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
 import { dummyResumeBuilderRecord } from "@/constants/dummy-resume-builder-record";
+import { apiClient, ApiError } from "@/lib/services/api-client.service";
+import { API_URLS } from "@/constants/api-urls";
 
 // Initial state - Empty by default, can be prefilled with dummy data
 const emptyResumeData: ResumeData = {
@@ -349,6 +359,9 @@ interface ResumeContextType {
 	isFirstStep: boolean;
 	templateId: string | null;
 	setTemplateId: (id: string) => void;
+	templateConfig: TemplateConfig | null;
+	isLoadingTemplate: boolean;
+	templateError: string | null;
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
@@ -370,6 +383,47 @@ export function ResumeProvider({
 	const [templateId, setTemplateId] = React.useState<string | null>(
 		initialTemplateId
 	);
+	const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(
+		null
+	);
+	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+	const [templateError, setTemplateError] = useState<string | null>(null);
+
+	// Fetch template config when templateId changes
+	useEffect(() => {
+		if (!templateId) {
+			setTemplateConfig(null);
+			setTemplateError(null);
+			return;
+		}
+
+		const fetchTemplate = async () => {
+			try {
+				setIsLoadingTemplate(true);
+				setTemplateError(null);
+
+				const response = await apiClient.get<TemplateConfig>(
+					`${API_URLS.TEMPLATE}/${templateId}`
+				);
+
+				if (response.success && response.data) {
+					setTemplateConfig(response.data);
+				} else {
+					setTemplateError("Template not found");
+				}
+			} catch (error) {
+				const errorMessage =
+					error instanceof ApiError
+						? error.message
+						: "Failed to load template";
+				setTemplateError(errorMessage);
+			} finally {
+				setIsLoadingTemplate(false);
+			}
+		};
+
+		fetchTemplate();
+	}, [templateId]);
 
 	const nextStep = () => {
 		// Validate current step before moving to next
@@ -432,7 +486,50 @@ export function ResumeProvider({
 		isFirstStep,
 		templateId,
 		setTemplateId,
+		templateConfig,
+		isLoadingTemplate,
+		templateError,
 	};
+
+	// Show template error if template not found
+	if (templateError && templateId) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-background">
+				<div className="text-center space-y-4 max-w-md p-6">
+					<div className="mx-auto w-20 h-20 rounded-2xl bg-destructive/10 flex items-center justify-center">
+						<svg
+							className="h-10 w-10 text-destructive"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+							/>
+						</svg>
+					</div>
+					<div>
+						<h3 className="text-2xl font-semibold">
+							Template Not Found
+						</h3>
+						<p className="text-muted-foreground mt-2">
+							The template you're looking for doesn't exist or has
+							been removed.
+						</p>
+					</div>
+					<a
+						href="/templates"
+						className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+					>
+						Browse Templates
+					</a>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<ResumeContext.Provider value={value}>

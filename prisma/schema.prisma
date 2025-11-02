@@ -61,18 +61,46 @@ model Template {
   @@map("templates")
 }
 
-// User Model (for future authentication)
+// User Model - Complete authentication system
 model User {
   id        String   @id @default(cuid())
+  
+  // Personal Information
+  firstName String
+  lastName  String
+  userName  String   @unique
   email     String   @unique
-  name      String?
-  role      String   @default("user") // "user", "admin"
+  password  String   // Hashed password
+  
+  // Profile
+  avatar    String?  // Avatar URL
+  bio       String?  // User bio
+  phone     String?  // Phone number
+  
+  // Verification & Security
+  emailVerified Boolean   @default(false)
+  otp           String?   // One-time password
+  otpExpiredAt  DateTime? // OTP expiration time
+  
+  // Account Status
+  isActive      Boolean   @default(true)
+  isBanned      Boolean   @default(false)
+  role          String    @default("user") // "user", "admin"
+  
+  // Security
+  lastLoginAt   DateTime?
+  
+  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   resumes Resume[]
 
+  // Indexes
+  @@index([email])
+  @@index([userName])
+  @@index([isActive, isBanned])
   @@map("users")
 }
 

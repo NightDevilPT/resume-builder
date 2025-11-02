@@ -225,7 +225,7 @@ export default function AdminTemplateCreator() {
 		{ id: "pricing", label: "Pricing", icon: Settings },
 	];
 
-	return (
+  return (
 		<div className="w-full h-full flex flex-col gap-3 md:gap-6 p-3 md:p-6 max-w-[1600px] mx-auto">
 			{/* Header Section */}
 			<div className="space-y-3 md:space-y-4">

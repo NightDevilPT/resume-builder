@@ -3,6 +3,8 @@
  * Populates database with sample template data
  */
 
+import "dotenv/config";
+import * as bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -580,23 +582,59 @@ const randomInt = (min: number, max: number) =>
 async function main() {
 	console.log("🌱 Starting database seed...");
 
-	// Clear existing templates
+	// Clear existing data
 	await prisma.template.deleteMany({});
-	console.log("🗑️  Cleared existing templates");
+	await prisma.user.deleteMany({});
+	console.log("Cleared existing data");
+
+	// Create Admin User
+	const adminEmail = process.env.EMAIL_ID || "admin@resumecraft.com";
+	const adminPassword = process.env.PASSWORD || "Admin@123";
+	const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+	const adminUser = await prisma.user.create({
+		data: {
+			firstName: "Admin",
+			lastName: "User",
+			userName: "admin",
+			email: adminEmail,
+			password: hashedPassword,
+			emailVerified: true,
+			isActive: true,
+			isBanned: false,
+			role: "admin",
+			avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+			bio: "System administrator with full access to all features",
+		},
+	});
+
+	console.log(`✅ Created admin user: ${adminUser.email}`);
+	console.log(`   Username: ${adminUser.userName}`);
+	console.log(`   Password: ${adminPassword} (from .env)`);
 
 	const templates = [];
 
-	for (let i = 0; i < 20; i++) {
-		const templateData = TEMPLATE_DATA[i];
+	for (let i = 0; i < 40; i++) {
+		// Cycle through template data (20 templates, reuse with different configs)
+		const templateIndex = i % TEMPLATE_DATA.length;
+		const templateData = TEMPLATE_DATA[templateIndex];
 		const colorScheme = randomFrom(COLOR_SCHEMES);
 		const layout = randomFrom(LAYOUTS);
 		const typography = randomFrom(TYPOGRAPHY_PRESETS);
 		const skillFormat = randomFrom(SKILL_FORMATS);
 		const isPaid = randomBool();
 
+		// Add variation number if reusing template
+		const templateName =
+			i >= TEMPLATE_DATA.length
+				? `${templateData.name} v${
+						Math.floor(i / TEMPLATE_DATA.length) + 1
+				  }`
+				: templateData.name;
+
 		const template = await prisma.template.create({
 			data: {
-				name: templateData.name,
+				name: templateName,
 				description: templateData.description,
 				thumbnail: `https://placehold.co/400x600/png?text=${encodeURIComponent(
 					templateData.name
@@ -729,27 +767,33 @@ async function main() {
 		});
 
 		templates.push(template);
-		console.log(`✅ Created template ${i + 1}/20: ${templateData.name}`);
+		console.log(`✅ Created template ${i + 1}/40: ${templateName}`);
 	}
 
 	console.log(`\n🎉 Successfully seeded ${templates.length} templates!`);
-	console.log("\n📊 Template Statistics:");
+	console.log("\n📊 Seed Summary:");
+	console.log(`   👤 Users: 1 admin created`);
+	console.log(`   📄 Templates: ${templates.length} created`);
 	console.log(
-		`   - Free templates: ${
+		`   - Free: ${
 			templates.filter((t: any) => !(t.pricing as any).isPaid).length
 		}`
 	);
 	console.log(
-		`   - Premium templates: ${
+		`   - Premium: ${
 			templates.filter((t: any) => (t.pricing as any).isPaid).length
 		}`
 	);
 	console.log(
-		`   - Average rating: ${(
+		`   - Avg Rating: ${(
 			templates.reduce((sum: number, t: any) => sum + t.rating, 0) /
 			templates.length
 		).toFixed(1)}`
 	);
+	console.log("\n🔑 Admin Credentials:");
+	console.log(`   Email: ${adminEmail}`);
+	console.log(`   Username: admin`);
+	console.log(`   Password: ${adminPassword}`);
 }
 
 main()

@@ -19,9 +19,29 @@ export function ResumeStepper() {
 		isFirstStep,
 		isLastStep,
 		resumeData,
+		templateConfig,
+		isLoadingTemplate,
+		templateId,
 	} = useResume();
 
 	const CurrentStepComponent = RESUME_STEPS[currentStep].component;
+
+	// Show loading state while fetching template
+	if (isLoadingTemplate && templateId) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-background">
+				<div className="text-center space-y-4">
+					<div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+					<div>
+						<h3 className="text-lg font-semibold">Loading Template...</h3>
+						<p className="text-muted-foreground text-sm mt-1">
+							Please wait while we prepare your template
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	const handleNext = () => {
 		// Trigger form submission by clicking the hidden submit button in the current step
@@ -61,11 +81,12 @@ export function ResumeStepper() {
 					</div>
 					<div className="min-w-0 flex-1">
 						<h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight truncate">
-							Professional Resume Builder
+							{templateConfig ? templateConfig.name : "Professional Resume Builder"}
 						</h1>
 						<p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-							Create a stunning resume in minutes with our
-							step-by-step builder
+							{templateConfig 
+								? templateConfig.description
+								: "Create a stunning resume in minutes with our step-by-step builder"}
 						</p>
 					</div>
 				</div>

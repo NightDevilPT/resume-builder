@@ -15,7 +15,10 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
 	const { name, description, pricing, metadata, categories } = template;
 
 	return (
-		<Card className="group relative overflow-hidden border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer bg-gradient-to-br from-background via-background to-muted/20 p-0">
+		<Card
+			onClick={onClick}
+			className="group relative overflow-hidden border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer bg-gradient-to-br from-background via-background to-muted/20 p-0"
+		>
 			{/* Animated gradient overlay */}
 			<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
