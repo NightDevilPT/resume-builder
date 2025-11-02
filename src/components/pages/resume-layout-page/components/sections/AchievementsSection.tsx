@@ -1,0 +1,41 @@
+"use client";
+
+import { AchievementsConfig } from "@/interfaces/templates";
+
+interface AchievementsSectionProps {
+	data: Array<{
+		title: string;
+		issuer: string;
+		year: string;
+		description?: string;
+	}>;
+	config?: AchievementsConfig;
+}
+
+export function AchievementsSection({ data, config }: AchievementsSectionProps) {
+	const textColor = "var(--template-text)";
+	const lightTextColor = "var(--template-text-light)";
+
+	return (
+		<div className="space-y-1.5">
+			{data.map((achievement, idx) => (
+				<div key={idx} className="space-y-0.5">
+					<h4 className="text-[0.75rem] font-medium" style={{ color: textColor }}>
+						{achievement.title}
+					</h4>
+					<div className="text-[0.65rem]" style={{ color: lightTextColor }}>
+						{config?.showIssuer && achievement.issuer}
+						{config?.showIssuer && config?.showDate && " • "}
+						{config?.showDate && achievement.year}
+					</div>
+					{config?.showDescription && achievement.description && (
+						<p className="text-[0.65rem]" style={{ color: textColor }}>
+							{achievement.description}
+						</p>
+					)}
+				</div>
+			))}
+		</div>
+	);
+}
+
