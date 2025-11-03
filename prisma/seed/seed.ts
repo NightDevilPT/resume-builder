@@ -579,6 +579,82 @@ const randomBool = () => Math.random() > 0.5;
 const randomInt = (min: number, max: number) =>
 	Math.floor(Math.random() * (max - min + 1)) + min;
 
+// Permission Presets
+const PERMISSION_PRESETS = [
+	{
+		name: "Fully Customizable",
+		permissions: {
+			canChangeColors: true,
+			canChangeFonts: true,
+			canChangeLayout: true,
+			canChangeSections: true,
+			canChangeSectionConfig: true,
+			canChangeSpacing: true,
+			canChangeBorders: true,
+		},
+	},
+	{
+		name: "Colors & Fonts Only",
+		permissions: {
+			canChangeColors: true,
+			canChangeFonts: true,
+			canChangeLayout: false,
+			canChangeSections: false,
+			canChangeSectionConfig: true,
+			canChangeSpacing: false,
+			canChangeBorders: false,
+		},
+	},
+	{
+		name: "Layout Locked",
+		permissions: {
+			canChangeColors: true,
+			canChangeFonts: true,
+			canChangeLayout: false,
+			canChangeSections: false,
+			canChangeSectionConfig: true,
+			canChangeSpacing: true,
+			canChangeBorders: true,
+		},
+	},
+	{
+		name: "Design Locked",
+		permissions: {
+			canChangeColors: false,
+			canChangeFonts: false,
+			canChangeLayout: false,
+			canChangeSections: true,
+			canChangeSectionConfig: true,
+			canChangeSpacing: false,
+			canChangeBorders: false,
+		},
+	},
+	{
+		name: "Premium Flexible",
+		permissions: {
+			canChangeColors: true,
+			canChangeFonts: true,
+			canChangeLayout: true,
+			canChangeSections: true,
+			canChangeSectionConfig: true,
+			canChangeSpacing: true,
+			canChangeBorders: true,
+		},
+	},
+	{
+		name: "Basic Limited",
+		permissions: {
+			canChangeColors: true,
+			canChangeFonts: false,
+			canChangeLayout: false,
+			canChangeSections: false,
+			canChangeSectionConfig: true,
+			canChangeSpacing: false,
+			canChangeBorders: false,
+		},
+	},
+];
+
 async function main() {
 	console.log("🌱 Starting database seed...");
 
@@ -623,6 +699,27 @@ async function main() {
 		const typography = randomFrom(TYPOGRAPHY_PRESETS);
 		const skillFormat = randomFrom(SKILL_FORMATS);
 		const isPaid = randomBool();
+		
+		// Assign permissions based on pricing tier
+		// Free templates: more restrictions
+		// Premium templates: more flexibility
+		let permissionPreset;
+		if (isPaid) {
+			// Premium templates get better permissions
+			permissionPreset = randomFrom([
+				PERMISSION_PRESETS[0], // Fully Customizable
+				PERMISSION_PRESETS[4], // Premium Flexible
+				PERMISSION_PRESETS[2], // Layout Locked
+			]);
+		} else {
+			// Free templates get more limited permissions
+			permissionPreset = randomFrom([
+				PERMISSION_PRESETS[1], // Colors & Fonts Only
+				PERMISSION_PRESETS[3], // Design Locked
+				PERMISSION_PRESETS[5], // Basic Limited
+				PERMISSION_PRESETS[0], // Some free templates fully customizable
+			]);
+		}
 
 		// Add variation number if reusing template
 		const templateName =
@@ -647,6 +744,9 @@ async function main() {
 					price: isPaid ? randomInt(5, 25) : 0,
 					tier: isPaid ? randomFrom(["basic", "premium"]) : "free",
 				},
+
+				// Permissions
+				permissions: permissionPreset.permissions,
 
 				// Layout
 				layout,
@@ -789,6 +889,22 @@ async function main() {
 			templates.reduce((sum: number, t: any) => sum + t.rating, 0) /
 			templates.length
 		).toFixed(1)}`
+	);
+	console.log(`\n🔐 Permission Distribution:`);
+	console.log(
+		`   - Fully Customizable: ${
+			templates.filter((t: any) => (t.permissions as any).canChangeLayout && (t.permissions as any).canChangeColors).length
+		}`
+	);
+	console.log(
+		`   - Layout Locked: ${
+			templates.filter((t: any) => !(t.permissions as any).canChangeLayout && (t.permissions as any).canChangeColors).length
+		}`
+	);
+	console.log(
+		`   - Design Locked: ${
+			templates.filter((t: any) => !(t.permissions as any).canChangeColors && (t.permissions as any).canChangeSections).length
+		}`
 	);
 	console.log("\n🔑 Admin Credentials:");
 	console.log(`   Email: ${adminEmail}`);

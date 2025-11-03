@@ -1,7 +1,7 @@
 "use client";
 
-import { getFontSize } from "@/lib/utils/template-helpers";
-import { PersonalInfoConfig } from "@/interfaces/templates";
+import { getFontSize, getFontWeightValue } from "@/lib/utils/template-helpers";
+import { PersonalInfoConfig, Typography } from "@/interfaces/templates";
 import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react";
 
 interface PersonalInfoSectionProps {
@@ -16,11 +16,7 @@ interface PersonalInfoSectionProps {
 		summary: string;
 	};
 	config?: PersonalInfoConfig;
-	typography?: {
-		nameSize?: string;
-		nameWeight?: string;
-		headingFont?: string;
-	};
+	typography?: Typography;
 }
 
 export function PersonalInfoSection({
@@ -37,7 +33,7 @@ export function PersonalInfoSection({
 				className="text-center mb-1"
 				style={{
 					fontSize: getFontSize(typography?.nameSize || "3xl"),
-					fontWeight: typography?.nameWeight || "bold",
+					fontWeight: getFontWeightValue(typography?.nameWeight),
 					fontFamily: typography?.headingFont || "Geist",
 					color: textColor,
 					lineHeight: "1.2",

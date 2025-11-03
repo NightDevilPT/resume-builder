@@ -186,7 +186,25 @@ export function SectionConfigStep({
 	const addSection = () => {
 		if (!selectedSection) return;
 
-		// Auto-set position based on layout type
+		// Personal info is always full-width with order 0
+		if (selectedSection === "personal-info") {
+			const newSection = {
+				type: selectedSection,
+				position: "full-width",
+				order: 0,
+				visibility: true,
+				required: true, // Personal info is always required
+			};
+
+			updateConfig("layout", {
+				...config.layout,
+				sections: [newSection, ...(config.layout?.sections || [])],
+			});
+			setSelectedSection("");
+			return;
+		}
+
+		// Auto-set position based on layout type for other sections
 		let defaultPosition = "full-width";
 		if (config.layout?.type?.startsWith("two-column")) {
 			defaultPosition = "left";
@@ -194,10 +212,17 @@ export function SectionConfigStep({
 			defaultPosition = "center";
 		}
 
+		// Calculate next order (skip 0 as it's reserved for personal-info)
+		const maxOrder = Math.max(
+			0,
+			...(config.layout?.sections?.map((s) => s.order) || [])
+		);
+		const newOrder = maxOrder + 1;
+
 		const newSection = {
 			type: selectedSection,
 			position: defaultPosition,
-			order: (config.layout?.sections?.length || 0) + 1,
+			order: newOrder,
 			visibility: true,
 			required: false,
 		};
@@ -218,6 +243,20 @@ export function SectionConfigStep({
 
 	const updateSection = (index: number, field: string, value: any) => {
 		const newSections = [...(config.layout?.sections || [])];
+		const section = newSections[index];
+
+		// Prevent changing personal-info's position and order
+		if (section.type === "personal-info") {
+			if (field === "position") {
+				// Personal info must always be full-width
+				return;
+			}
+			if (field === "order") {
+				// Personal info must always have order 0
+				return;
+			}
+		}
+
 		newSections[index] = { ...newSections[index], [field]: value };
 		updateConfig("layout", { ...config.layout, sections: newSections });
 	};
@@ -356,12 +395,23 @@ export function SectionConfigStep({
 							<div className="flex items-start justify-between mb-4">
 								<h4 className="font-medium">
 									{toTitleCase(section.type)}
+									{section.type === "personal-info" && (
+										<span className="text-xs text-muted-foreground ml-2">
+											(Required)
+										</span>
+									)}
 								</h4>
 								<Button
 									variant="ghost"
 									size="sm"
 									onClick={() => removeSection(index)}
 									className="text-destructive hover:text-destructive"
+									disabled={section.type === "personal-info"}
+									title={
+										section.type === "personal-info"
+											? "Personal info cannot be removed"
+											: "Remove section"
+									}
 								>
 									<Trash2 className="h-4 w-4" />
 								</Button>
@@ -376,6 +426,7 @@ export function SectionConfigStep({
 										onValueChange={(v) =>
 											updateSection(index, "position", v)
 										}
+										disabled={section.type === "personal-info"}
 									>
 										<SelectTrigger>
 											<SelectValue />
@@ -392,15 +443,19 @@ export function SectionConfigStep({
 										</SelectContent>
 									</Select>
 									<p className="text-xs text-muted-foreground">
-										{config.layout?.type ===
-											"single-column" &&
-											"Only full-width"}
-										{config.layout?.type?.startsWith(
-											"two-column"
-										) && "Left, Right, or Full-Width"}
-										{config.layout?.type ===
-											"three-column" &&
-											"Left, Center, Right, or Full-Width"}
+										{section.type === "personal-info"
+											? "Always Full-Width"
+											: config.layout?.type ===
+											  "single-column"
+											? "Only full-width"
+											: config.layout?.type?.startsWith(
+													"two-column"
+											  )
+											? "Left, Right, or Full-Width"
+											: config.layout?.type ===
+											  "three-column"
+											? "Left, Center, Right, or Full-Width"
+											: ""}
 									</p>
 								</div>
 
@@ -409,7 +464,7 @@ export function SectionConfigStep({
 									<Label className="text-sm">Order</Label>
 									<Input
 										type="number"
-										min="1"
+										min={section.type === "personal-info" ? "0" : "1"}
 										value={section.order}
 										onChange={(e) =>
 											updateSection(
@@ -418,7 +473,13 @@ export function SectionConfigStep({
 												parseInt(e.target.value)
 											)
 										}
+										disabled={section.type === "personal-info"}
 									/>
+									{section.type === "personal-info" && (
+										<p className="text-xs text-muted-foreground">
+											Always Order 0
+										</p>
+									)}
 								</div>
 
 								{/* Custom Label */}

@@ -147,3 +147,19 @@ export function parsePriceToCents(priceInDollars: string): number {
 	return Math.round(parseFloat(priceInDollars) * 100);
 }
 
+/**
+ * Convert font weight string to numeric value for CSS
+ */
+export function getFontWeightValue(weight?: string): number {
+	const weights: Record<string, number> = {
+		"light": 300,
+		"normal": 400,
+		"medium": 500,
+		"semibold": 600,
+		"bold": 700,
+		"extrabold": 800,
+		"black": 900,
+	};
+	return weights[weight || "semibold"] || 600;
+}
+

@@ -63,7 +63,7 @@ export function SkillsSection({ data, config, skillsGridCols }: SkillsSectionPro
 			case "bars":
 				if (!config?.showLevel) {
 					return (
-						<div className="space-y-0.5">
+						<div className={`grid ${skillsGridCols} gap-x-2 gap-y-0.5`}>
 							{skills.map((skill, idx) => (
 								<span
 									key={idx}
@@ -77,7 +77,7 @@ export function SkillsSection({ data, config, skillsGridCols }: SkillsSectionPro
 					);
 				}
 				return (
-					<div className="space-y-1">
+					<div className={`grid ${skillsGridCols} gap-x-3 gap-y-1.5`}>
 						{skills.map((skill, idx) => {
 							const level = getSkillLevel(skill);
 							return (
@@ -340,14 +340,18 @@ export function SkillsSection({ data, config, skillsGridCols }: SkillsSectionPro
 
 			case "list":
 				return (
-					<p className="text-[0.65rem] leading-snug" style={{ color: textColor }}>
-						{skills.join(", ")}
-					</p>
+					<div className={`grid ${skillsGridCols} gap-x-2 gap-y-0.5`}>
+						{skills.map((skill, idx) => (
+							<span key={idx} className="text-[0.65rem]" style={{ color: textColor }}>
+								{skill}
+							</span>
+						))}
+					</div>
 				);
 
 			case "chips":
 				return (
-					<div className="flex flex-wrap gap-1">
+					<div className={`grid ${skillsGridCols} gap-x-1.5 gap-y-1`}>
 						{skills.map((skill, idx) => {
 							const percentage = getSkillLevel(skill);
 							const colors = getChipColor(percentage);
@@ -355,7 +359,7 @@ export function SkillsSection({ data, config, skillsGridCols }: SkillsSectionPro
 							return (
 								<span
 									key={idx}
-									className="px-2 py-0.5 text-[0.6rem] rounded-full inline-flex items-center gap-1"
+									className="px-2 py-0.5 text-[0.6rem] rounded-full inline-flex items-center gap-1 justify-center"
 									style={{
 										backgroundColor: colors.bg,
 										color: colors.text,
@@ -379,11 +383,11 @@ export function SkillsSection({ data, config, skillsGridCols }: SkillsSectionPro
 			case "text":
 			default:
 				return (
-					<div className="flex flex-wrap gap-1">
+					<div className={`grid ${skillsGridCols} gap-x-1.5 gap-y-1`}>
 						{skills.map((skill, idx) => (
 							<span
 								key={idx}
-								className="px-2 py-0.5 text-[0.6rem] rounded"
+								className="px-2 py-0.5 text-[0.6rem] rounded text-center"
 								style={{
 									backgroundColor: "var(--template-primary)",
 									color: "white",

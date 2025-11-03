@@ -8,6 +8,7 @@ import {
 	generateCSSVariables,
 	A4_DIMENSIONS,
 	toTitleCase,
+	getFontWeightValue,
 } from "@/lib/utils/template-helpers";
 import {
 	PersonalInfoSection,
@@ -33,8 +34,14 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 	const displayData = {
 		personalInfo: {
 			...data.personalInfo,
-			linkedin: data.personalInfo.links?.find((l) => l.label?.toLowerCase().includes('linkedin'))?.url || '',
-			github: data.personalInfo.links?.find((l) => l.label?.toLowerCase().includes('github'))?.url || '',
+			linkedin:
+				data.personalInfo.links?.find((l) =>
+					l.label?.toLowerCase().includes("linkedin")
+				)?.url || "",
+			github:
+				data.personalInfo.links?.find((l) =>
+					l.label?.toLowerCase().includes("github")
+				)?.url || "",
 		},
 		experience: data.experience.map((exp) => ({
 			...exp,
@@ -44,22 +51,28 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 		})),
 		education: data.education.map((edu) => ({
 			...edu,
-			gpa: edu.gradeValue ? `${edu.gradeType.toUpperCase()}: ${edu.gradeValue}` : '',
+			gpa: edu.gradeValue
+				? `${edu.gradeType.toUpperCase()}: ${edu.gradeValue}`
+				: "",
 		})),
 		skills: {
 			technical: data.skills.technical.map((s) => s.name),
 			soft: data.skills.soft.map((s) => s.name),
-			languages: data.skills.languages.map((l) => `${l.language} (${l.proficiency})`),
+			languages: data.skills.languages.map(
+				(l) => `${l.language} (${l.proficiency})`
+			),
 		},
 		projects: data.projects,
 		certifications: data.certifications.map((cert) => ({
 			...cert,
 			issuer: cert.issuingOrganization,
-			year: cert.issueDate ? new Date(cert.issueDate).getFullYear().toString() : '',
+			year: cert.issueDate
+				? new Date(cert.issueDate).getFullYear().toString()
+				: "",
 		})),
 		achievements: data.achievements.map((ach) => ({
 			...ach,
-			year: ach.date ? new Date(ach.date).getFullYear().toString() : '',
+			year: ach.date ? new Date(ach.date).getFullYear().toString() : "",
 		})),
 	};
 
@@ -118,31 +131,23 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 	// Determine grid columns for skills based on layout and position
 	const getSkillsGridCols = (position?: string) => {
 		const layoutType = config.layout?.type;
-		
-		// Single column layout → 3 columns for skills
-		if (layoutType === "single-column") return "grid-cols-3";
-		
-		// Two column equal → 2 columns for skills
-		if (layoutType === "two-column-equal") return "grid-cols-2";
-		
-		// Two column heavy → depends on which side skills are on
-		if (layoutType === "two-column-left-heavy") {
-			if (position === "left") return "grid-cols-3"; // Wider side
-			if (position === "right") return "grid-cols-2"; // Narrower side
+
+		// Single column layout → 4 columns for skills
+		if (layoutType === "single-column") return "grid-cols-4";
+
+		// Two column layouts → 2 columns for skills
+		if (
+			layoutType === "two-column-equal" ||
+			layoutType === "two-column-left-heavy" ||
+			layoutType === "two-column-right-heavy"
+		) {
+			return "grid-cols-2";
 		}
-		
-		if (layoutType === "two-column-right-heavy") {
-			if (position === "left") return "grid-cols-2"; // Narrower side
-			if (position === "right") return "grid-cols-3"; // Wider side
-		}
-		
-		// Three column layout → 1 column for skills (very narrow columns)
+
+		// Three column layout → 1 column for skills
 		if (layoutType === "three-column") return "grid-cols-1";
-		
-		// Full-width → 3 columns
-		if (position === "full-width") return "grid-cols-3";
-		
-		// Default
+
+		// Default for any other layout type
 		return "grid-cols-2";
 	};
 
@@ -199,6 +204,7 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 					<CertificationsSection
 						data={displayData.certifications}
 						config={config.certificationsConfig}
+						typography={config.typography}
 					/>
 				);
 
@@ -207,6 +213,7 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 					<AchievementsSection
 						data={displayData.achievements}
 						config={config.achievementsConfig}
+						typography={config.typography}
 					/>
 				);
 
@@ -274,7 +281,8 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 										)
 											return null;
 
-										const gridColumn = getGridColumnPosition(position);
+										const gridColumn =
+											getGridColumnPosition(position);
 
 										return (
 											<div
@@ -285,7 +293,8 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 														: ""
 												}
 												style={{
-													gridColumn: gridColumn || undefined,
+													gridColumn:
+														gridColumn || undefined,
 												}}
 											>
 												{sectionsInPosition.map(
@@ -345,10 +354,7 @@ export function TemplatePreview({ config, resumeData }: TemplatePreviewProps) {
 																				);
 																			})(),
 																		fontWeight:
-																			config
-																				.typography
-																				?.headingWeight ||
-																			"semibold",
+																			getFontWeightValue(config.typography?.headingWeight),
 																		fontFamily:
 																			config
 																				.typography

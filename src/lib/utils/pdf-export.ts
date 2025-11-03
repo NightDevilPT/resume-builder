@@ -29,7 +29,12 @@ export async function exportResumeToPDF(fileName: string = "resume.pdf"): Promis
 		clonedContent.style.boxShadow = "none";
 		clonedContent.style.border = "none";
 
-		// Get all stylesheets from the current document
+		// Get all link tags (for external stylesheets and fonts)
+		const links = Array.from(document.querySelectorAll('link[rel="stylesheet"], link[rel="preconnect"], link[href*="fonts"]'))
+			.map((link) => link.outerHTML)
+			.join("\n");
+
+		// Get all stylesheets from the current document including @font-face rules
 		const styles = Array.from(document.styleSheets)
 			.map((sheet) => {
 				try {
@@ -43,6 +48,11 @@ export async function exportResumeToPDF(fileName: string = "resume.pdf"): Promis
 			})
 			.join("");
 
+		// Also get inline style tags (which may contain Next.js font definitions)
+		const inlineStyles = Array.from(document.querySelectorAll('style'))
+			.map((style) => style.outerHTML)
+			.join("\n");
+
 		// Build the print HTML
 		printWindow.document.write(`
 			<!DOCTYPE html>
@@ -50,30 +60,70 @@ export async function exportResumeToPDF(fileName: string = "resume.pdf"): Promis
 			<head>
 				<meta charset="UTF-8">
 				<title>Resume - ${fileName}</title>
+				${links}
+				${inlineStyles}
 				<style>
 					@page {
 						size: A4 portrait;
-						margin: 0;
+						margin: 1.5rem;
 					}
 					
 					body {
 						margin: 0;
 						padding: 0;
-						width: 210mm;
-						height: 297mm;
+						width: 100%;
+						min-height: auto;
+					}
+					
+					#resume-preview {
+						max-width: 210mm;
+						margin: 0 auto;
+						box-shadow: none !important;
+						border: none !important;
+					}
+					
+					/* Remove the inner padding since @page margin handles it */
+					#resume-preview > div {
+						padding: 0 !important;
 					}
 					
 					* {
 						print-color-adjust: exact !important;
 						-webkit-print-color-adjust: exact !important;
 						color-adjust: exact !important;
-						box-shadow: none !important;
 					}
 					
 					@media print {
-						* {
+						html, body {
+							width: 210mm;
+							height: 100%;
+						}
+						
+						#resume-preview {
 							box-shadow: none !important;
 							border: none !important;
+							page-break-after: auto;
+						}
+						
+						/* Remove padding to avoid double margins */
+						#resume-preview > div {
+							padding: 0 !important;
+						}
+						
+						/* Prevent breaks inside important elements */
+						.resume-section {
+							page-break-inside: avoid;
+						}
+						
+						/* Handle section breaks */
+						h1, h2, h3, h4, h5, h6 {
+							page-break-after: avoid;
+							page-break-inside: avoid;
+						}
+						
+						/* Keep list items together when possible */
+						li, p {
+							page-break-inside: avoid;
 						}
 					}
 				</style>
@@ -87,14 +137,17 @@ export async function exportResumeToPDF(fileName: string = "resume.pdf"): Promis
 
 		printWindow.document.close();
 		
-		// Auto-trigger print dialog
-		setTimeout(() => {
-			printWindow.print();
-			// Close after printing (user can cancel)
+		// Wait for fonts and images to load before printing
+		printWindow.addEventListener('load', () => {
+			// Additional delay to ensure all fonts are fully loaded
 			setTimeout(() => {
-				printWindow.close();
-			}, 100);
-		}, 500);
+				printWindow.print();
+				// Close after printing (user can cancel)
+				setTimeout(() => {
+					printWindow.close();
+				}, 100);
+			}, 800); // Increased delay for font loading
+		});
 
 		return Promise.resolve();
 	} catch (error) {

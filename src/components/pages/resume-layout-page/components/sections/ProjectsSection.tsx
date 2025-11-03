@@ -1,7 +1,7 @@
 "use client";
 
-import { ProjectsConfig } from "@/interfaces/templates";
-import { getFontSize } from "@/lib/utils/template-helpers";
+import { ProjectsConfig, Typography } from "@/interfaces/templates";
+import { getFontSize, getFontWeightValue } from "@/lib/utils/template-helpers";
 
 interface ProjectsSectionProps {
 	data: Array<{
@@ -10,10 +10,7 @@ interface ProjectsSectionProps {
 		technologies: string[];
 	}>;
 	config?: ProjectsConfig;
-	typography?: {
-		subheadingSize?: string;
-		subheadingWeight?: string;
-	};
+	typography?: Typography;
 }
 
 export function ProjectsSection({
@@ -24,9 +21,10 @@ export function ProjectsSection({
 	const textColor = "var(--template-text)";
 	const lightTextColor = "var(--template-text-light)";
 
-	const subheadingStyle = {
+	const subheadingStyle: React.CSSProperties = {
 		fontSize: getFontSize(typography?.subheadingSize || "base"),
-		fontWeight: typography?.subheadingWeight || "semibold",
+		fontWeight: getFontWeightValue(typography?.subheadingWeight),
+		fontFamily: typography?.headingFont || typography?.bodyFont || "Geist",
 		color: textColor,
 	};
 

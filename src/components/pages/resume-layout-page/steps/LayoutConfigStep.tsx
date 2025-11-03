@@ -59,36 +59,62 @@ export function LayoutConfigStep({
 			newLayout.threeColumnRatio = [25, 50, 25];
 		}
 
-		// Auto-adjust section positions based on layout type
-		if (newLayout.sections) {
-			newLayout.sections = newLayout.sections.map((section) => {
-				// Single column: only full-width allowed
-				if (type === "single-column") {
-					return { ...section, position: "full-width" };
-				}
+		// Auto-adjust section positions and order based on layout type
+		if (newLayout.sections && newLayout.sections.length > 0) {
+			// Separate personal-info from other sections
+			const personalInfo = newLayout.sections.find(
+				(s) => s.type === "personal-info"
+			);
+			const otherSections = newLayout.sections.filter(
+				(s) => s.type !== "personal-info"
+			);
 
-				// Two column: convert center to left/right, keep full-width
-				if (type.startsWith("two-column")) {
-					if (section.position === "center") {
-						return { ...section, position: "left" };
-					}
-					if (
-						section.position !== "left" &&
-						section.position !== "right" &&
-						section.position !== "full-width"
-					) {
-						return { ...section, position: "left" };
-					}
-				}
+			// Always set personal-info as full-width with order 0
+			const updatedPersonalInfo = personalInfo
+				? { ...personalInfo, position: "full-width" as const, order: 0 }
+				: null;
 
-				// Three column: keep all positions valid
-				if (type === "three-column") {
-					// All positions are valid
-					return section;
-				}
+			// Automatically distribute other sections based on layout type
+			let updatedOtherSections = [...otherSections];
 
-				return section;
-			});
+			if (type === "single-column") {
+				// Single column: all sections full-width, sequential order
+				updatedOtherSections = otherSections.map((section, idx) => ({
+					...section,
+					position: "full-width" as const,
+					order: idx + 1, // Start from 1 (personal-info is 0)
+				}));
+			} else if (type.startsWith("two-column")) {
+				// Two column: alternate between left and right
+				updatedOtherSections = otherSections.map((section, idx) => {
+					const position = idx % 2 === 0 ? "left" : "right";
+					return {
+						...section,
+						position: position as "left" | "right",
+						order: idx + 1,
+					};
+				});
+			} else if (type === "three-column") {
+				// Three column: distribute across left, center, right
+				const positions: Array<"left" | "center" | "right"> = [
+					"left",
+					"center",
+					"right",
+				];
+				updatedOtherSections = otherSections.map((section, idx) => {
+					const position = positions[idx % 3];
+					return {
+						...section,
+						position,
+						order: idx + 1,
+					};
+				});
+			}
+
+			// Combine personal-info with other sections
+			newLayout.sections = updatedPersonalInfo
+				? [updatedPersonalInfo, ...updatedOtherSections]
+				: updatedOtherSections;
 		}
 
 		updateConfig("layout", newLayout);

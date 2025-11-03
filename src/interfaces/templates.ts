@@ -33,6 +33,17 @@ export type SectionPosition = "left" | "right" | "center" | "full-width";
 // Font weight options
 export type FontWeight = "light" | "normal" | "medium" | "semibold" | "bold";
 
+// Template Permissions - Controls what users can customize
+export interface TemplatePermissions {
+  canChangeColors: boolean;           // Allow changing color scheme
+  canChangeFonts: boolean;            // Allow changing font families and typography
+  canChangeLayout: boolean;           // Allow changing layout type (single/two/three column)
+  canChangeSections: boolean;         // Allow adding/removing/reordering sections
+  canChangeSectionConfig: boolean;    // Allow changing section-specific settings (e.g., show/hide fields)
+  canChangeSpacing: boolean;          // Allow changing margins, padding, gaps
+  canChangeBorders: boolean;          // Allow changing border styles
+}
+
 // Skill proficiency display format
 export type SkillDisplayFormat = 
   | "bars" 
@@ -210,6 +221,9 @@ export interface TemplateConfig {
   
   // Pricing
   pricing: PricingInfo;
+  
+  // Permissions - What users can customize
+  permissions: TemplatePermissions;
   
   // Layout and sections
   layout: LayoutConfig;

@@ -15,6 +15,15 @@ export const defaultTemplateConfig: TemplateConfig = {
 		isPaid: false,
 		tier: "free",
 	},
+	permissions: {
+		canChangeColors: true,
+		canChangeFonts: true,
+		canChangeLayout: true,
+		canChangeSections: true,
+		canChangeSectionConfig: true,
+		canChangeSpacing: true,
+		canChangeBorders: true,
+	},
 	layout: {
 		type: "two-column-left-heavy",
 		columnRatio: {

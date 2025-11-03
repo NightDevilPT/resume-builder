@@ -121,6 +121,17 @@ const pricingInfoSchema = z.object({
 	tier: z.enum(["free", "basic", "premium", "custom"]).optional(),
 });
 
+// Permissions schema
+const permissionsSchema = z.object({
+	canChangeColors: z.boolean(),
+	canChangeFonts: z.boolean(),
+	canChangeLayout: z.boolean(),
+	canChangeSections: z.boolean(),
+	canChangeSectionConfig: z.boolean(),
+	canChangeSpacing: z.boolean(),
+	canChangeBorders: z.boolean(),
+});
+
 // Personal info config schema
 const personalInfoConfigSchema = z.object({
 	showWebsite: z.boolean(),
@@ -212,6 +223,7 @@ export const templateConfigSchema = z.object({
 	thumbnail: z.string().url(),
 	categories: z.array(z.string()).min(1),
 	pricing: pricingInfoSchema,
+	permissions: permissionsSchema,
 	layout: layoutConfigSchema,
 	colors: colorSchemeSchema,
 	typography: typographySchema,
@@ -238,6 +250,7 @@ export const createTemplateSchema = z.object({
 	colors: colorSchemeSchema,
 	typography: typographySchema,
 	spacing: spacingSchema,
+	permissions: permissionsSchema,
 	borders: borderConfigSchema,
 	personalInfoConfig: personalInfoConfigSchema,
 	experienceConfig: experienceConfigSchema,
@@ -260,6 +273,7 @@ export const updateTemplateSchema = z.object({
 	thumbnail: z.string().url().optional(),
 	categories: z.array(z.string()).min(1).optional(),
 	pricing: pricingInfoSchema.optional(),
+	permissions: permissionsSchema.optional(),
 	layout: layoutConfigSchema.optional(),
 	colors: colorSchemeSchema.optional(),
 	typography: typographySchema.optional(),

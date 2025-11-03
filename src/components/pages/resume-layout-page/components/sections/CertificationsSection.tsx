@@ -1,6 +1,7 @@
 "use client";
 
-import { CertificationsConfig } from "@/interfaces/templates";
+import { CertificationsConfig, Typography } from "@/interfaces/templates";
+import { getFontSize, getFontWeightValue } from "@/lib/utils/template-helpers";
 
 interface CertificationsSectionProps {
 	data: Array<{
@@ -9,17 +10,25 @@ interface CertificationsSectionProps {
 		year: string;
 	}>;
 	config?: CertificationsConfig;
+	typography?: Typography;
 }
 
-export function CertificationsSection({ data, config }: CertificationsSectionProps) {
+export function CertificationsSection({ data, config, typography }: CertificationsSectionProps) {
 	const textColor = "var(--template-text)";
 	const lightTextColor = "var(--template-text-light)";
+
+	const subheadingStyle: React.CSSProperties = {
+		fontSize: getFontSize(typography?.subheadingSize || "base"),
+		fontWeight: getFontWeightValue(typography?.subheadingWeight),
+		fontFamily: typography?.headingFont || typography?.bodyFont || "Geist",
+		color: textColor,
+	};
 
 	return (
 		<div className="space-y-1.5">
 			{data.map((cert, idx) => (
 				<div key={idx}>
-					<h4 className="text-[0.75rem] font-medium" style={{ color: textColor }}>
+					<h4 style={subheadingStyle}>
 						{cert.name}
 					</h4>
 					<div className="text-[0.65rem]" style={{ color: lightTextColor }}>

@@ -21,6 +21,9 @@ model Template {
   // Pricing (stored as JSON for flexibility)
   pricing Json // PricingInfo: { isPaid, price, tier }
 
+  // Permissions - What users can customize (stored as JSON)
+  permissions Json // TemplatePermissions: { canChangeColors, canChangeFonts, canChangeLayout, etc. }
+
   // Layout and sections (stored as JSON)
   layout Json // LayoutConfig: { type, columnRatio, gap, sections }
 

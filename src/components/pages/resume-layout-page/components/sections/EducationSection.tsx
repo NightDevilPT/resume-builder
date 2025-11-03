@@ -1,7 +1,7 @@
 "use client";
 
-import { EducationConfig } from "@/interfaces/templates";
-import { formatDate, getFontSize } from "@/lib/utils/template-helpers";
+import { EducationConfig, Typography } from "@/interfaces/templates";
+import { formatDate, getFontSize, getFontWeightValue } from "@/lib/utils/template-helpers";
 
 interface EducationSectionProps {
 	data: Array<{
@@ -14,10 +14,7 @@ interface EducationSectionProps {
 		gpa?: string;
 	}>;
 	config?: EducationConfig;
-	typography?: {
-		subheadingSize?: string;
-		subheadingWeight?: string;
-	};
+	typography?: Typography;
 }
 
 export function EducationSection({ data, config, typography }: EducationSectionProps) {
@@ -25,9 +22,10 @@ export function EducationSection({ data, config, typography }: EducationSectionP
 	const lightTextColor = "var(--template-text-light)";
 	const dateFormat = config?.dateFormat || "short";
 
-	const subheadingStyle = {
+	const subheadingStyle: React.CSSProperties = {
 		fontSize: getFontSize(typography?.subheadingSize || "base"),
-		fontWeight: typography?.subheadingWeight || "semibold",
+		fontWeight: getFontWeightValue(typography?.subheadingWeight),
+		fontFamily: typography?.headingFont || typography?.bodyFont || "Geist",
 		color: textColor,
 	};
 

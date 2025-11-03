@@ -11,6 +11,7 @@ import {
 	ZoomIn,
 	ZoomOut,
 	RotateCcw,
+	Download,
 } from "lucide-react";
 import {
 	useTemplate,
@@ -20,7 +21,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { PricingStep } from "./steps/PricingStep";
 import { Button } from "@/components/ui/button";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { TemplateConfig } from "@/interfaces/templates";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,9 +29,11 @@ import { TypographyStep } from "./steps/TypographyStep";
 import { ColorSchemeStep } from "./steps/ColorSchemeStep";
 import { LayoutConfigStep } from "./steps/LayoutConfigStep";
 import { SectionConfigStep } from "./steps/SectionConfigStep";
+import { PermissionsStep } from "./steps/PermissionsStep";
 import { TemplatePreview } from "./components/TemplatePreview";
 import { defaultTemplateConfig } from "@/constants/default-template";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { exportResumeToPDF } from "@/lib/utils/pdf-export";
 
 export default function AdminTemplateCreator() {
 	const { dispatch, isSaving, saveTemplate, updateTemplateById } = useTemplate();
@@ -59,7 +62,7 @@ export default function AdminTemplateCreator() {
 				...prev,
 				[section]:
 					typeof currentSection === "object" &&
-					currentSection !== null
+						currentSection !== null
 						? { ...currentSection, ...data }
 						: data,
 			};
@@ -218,6 +221,7 @@ export default function AdminTemplateCreator() {
 
 	const tabs = [
 		{ id: "basic", label: "Basic Info", icon: Settings },
+		{ id: "permissions", label: "Permissions", icon: Eye },
 		{ id: "layout", label: "Layout", icon: Layout },
 		{ id: "sections", label: "Sections", icon: Settings },
 		{ id: "colors", label: "Colors", icon: Palette },
@@ -225,7 +229,26 @@ export default function AdminTemplateCreator() {
 		{ id: "pricing", label: "Pricing", icon: Settings },
 	];
 
-  return (
+	// Memoize the config with deep dependencies to ensure re-render on any change
+	const memoizedConfig = useMemo(() => {
+		return { ...templateConfig } as TemplateConfig;
+	}, [
+		templateConfig.typography,
+		templateConfig.colors,
+		templateConfig.layout,
+		templateConfig.permissions,
+		templateConfig.name,
+		templateConfig.description,
+		templateConfig.personalInfoConfig,
+		templateConfig.experienceConfig,
+		templateConfig.educationConfig,
+		templateConfig.skillsConfig,
+		templateConfig.projectsConfig,
+		templateConfig.certificationsConfig,
+		templateConfig.achievementsConfig,
+	]);
+
+	return (
 		<div className="w-full h-full flex flex-col gap-3 md:gap-6 p-3 md:p-6 max-w-[1600px] mx-auto">
 			{/* Header Section */}
 			<div className="space-y-3 md:space-y-4">
@@ -258,7 +281,7 @@ export default function AdminTemplateCreator() {
 					onValueChange={setActiveTab}
 					className="w-full"
 				>
-					<TabsList className="grid grid-cols-3 md:grid-cols-6 gap-2 w-full h-auto bg-muted">
+					<TabsList className="grid grid-cols-3 md:grid-cols-7 gap-2 w-full h-auto bg-muted">
 						{tabs.map((tab) => (
 							<TabsTrigger
 								key={tab.id}
@@ -283,19 +306,26 @@ export default function AdminTemplateCreator() {
 					<ScrollArea className="flex-1 overflow-hidden">
 						<Tabs value={activeTab} onValueChange={setActiveTab}>
 							<div className="px-6">
-								<TabsContent value="basic" className="mt-0">
-									<BasicInfoStep
-										config={templateConfig}
-										updateConfig={updateConfig}
-									/>
-								</TabsContent>
+							<TabsContent value="basic" className="mt-0">
+								<BasicInfoStep
+									config={templateConfig}
+									updateConfig={updateConfig}
+								/>
+							</TabsContent>
 
-								<TabsContent value="layout" className="mt-0">
-									<LayoutConfigStep
-										config={templateConfig}
-										updateConfig={updateConfig}
-									/>
-								</TabsContent>
+							<TabsContent value="permissions" className="mt-0">
+								<PermissionsStep
+									config={templateConfig}
+									updateConfig={updateConfig}
+								/>
+							</TabsContent>
+
+							<TabsContent value="layout" className="mt-0">
+								<LayoutConfigStep
+									config={templateConfig}
+									updateConfig={updateConfig}
+								/>
+							</TabsContent>
 
 								<TabsContent value="colors" className="mt-0">
 									<ColorSchemeStep
@@ -421,6 +451,21 @@ export default function AdminTemplateCreator() {
 								>
 									<RotateCcw className="h-3.5 w-3.5" />
 								</Button>
+
+								<Button
+									size="sm"
+									onClick={() => {
+										exportResumeToPDF(templateConfig.name || "resume.pdf");
+										toast.success("Print dialog opened!", {
+											description: "IMPORTANT: Click 'More settings' and uncheck 'Headers and footers' to remove date/title from PDF",
+											duration: 10000,
+										});
+									}}
+									title="Download PDF"
+									className="h-8 w-8 p-0"
+								>
+									<Download className="h-3.5 w-3.5" />
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -440,20 +485,19 @@ export default function AdminTemplateCreator() {
 						<div
 							className="absolute inset-0 flex items-center justify-center"
 							style={{
-								transform: `translate(${position.x}px, ${
-									position.y
-								}px) scale(${zoom / 100})`,
+								transform: `translate(${position.x}px, ${position.y
+									}px) scale(${zoom / 100})`,
 								transformOrigin: "center center",
 								transition: isDraggingActive
 									? "none"
 									: "transform 0.2s ease-out",
 							}}
 						>
-							<div className="p-6">
-								<TemplatePreview
-									config={templateConfig as TemplateConfig}
-								/>
-							</div>
+						<div className="p-6">
+							<TemplatePreview
+								config={memoizedConfig}
+							/>
+						</div>
 						</div>
 					</div>
 				</Card>
