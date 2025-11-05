@@ -44,7 +44,8 @@ export function ResumeToolbar({
 			// Print dialog opened successfully
 			toast.success("Print dialog opened!", {
 				id: "pdf-export",
-				description: "IMPORTANT: Click 'More settings' and uncheck 'Headers and footers' to remove date/title from PDF",
+				description:
+					"IMPORTANT: Click 'More settings' and uncheck 'Headers and footers' to remove date/title from PDF",
 				duration: 10000,
 			});
 		} catch (error) {

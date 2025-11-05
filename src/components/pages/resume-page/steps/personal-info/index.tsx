@@ -63,7 +63,7 @@ export function PersonalInfoPage() {
 	// This will be called if validation fails
 	const onError = () => {
 		// Form validation will automatically show error messages
-		console.log("Form validation failed");
+		// NOTE: No action needed - FormMessage components handle display
 	};
 
 	return (

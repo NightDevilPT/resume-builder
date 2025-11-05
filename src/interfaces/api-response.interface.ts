@@ -1,6 +1,11 @@
 export interface ApiResponse<T> {
 	success: boolean;
-	data: T;
+	data?: T;
+	error?: {
+		code: string;
+		message: string;
+		details?: unknown;
+	};
 	meta?: {
 		currentPage: number;
 		totalPages: number;

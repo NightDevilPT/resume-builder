@@ -1,0 +1,1824 @@
+---
+alwaysApply: true
+---
+
+# ResumeCraft - Development Rule Set
+
+## 📋 Project Overview
+**Project Name:** ResumeCraft - AI-Powered Resume Builder
+**Description:** A modern, multi-step resume builder with template support, form validation, and future AI integration
+**Tech Stack:** Next.js 15.5.5, React 19, TypeScript, Tailwind CSS 4, Prisma, PostgreSQL
+**Architecture:** Next.js App Router with Server-Side Rendering (SSR) support
+
+---
+
+## 🎯 Core Principles
+
+### 1. Type Safety First
+- **ALWAYS** use TypeScript with strict mode enabled
+- **NEVER** use `any` type - prefer `unknown` or proper type definitions
+- **ALWAYS** define interfaces before implementation
+- **ENFORCE** TypeScript strict rules:
+  ```typescript
+  // Forbidden
+  ❌ const data: any = response;
+  
+  // Correct
+  ✅ const data: ApiResponse<TemplateConfig> = response;
+  ```
+
+### 2. Component Architecture
+- **Use Client Components (`"use client"`)** for:
+  - Forms and user interactions
+  - Context providers
+  - State management with hooks
+  - Browser APIs (localStorage, window, etc.)
+  
+- **Use Server Components (default)** for:
+  - Static content pages
+  - Data fetching from database
+  - SEO-critical pages
+  - API route handlers
+
+### 3. Code Quality
+- **ALWAYS** follow ESLint rules (extends next/core-web-vitals, next/typescript)
+- **NEVER** commit code with linting errors
+- **PREFER** functional components over class components
+- **USE** modern React patterns (hooks, context, composition)
+
+---
+
+## 🏗️ Project Structure
+
+### Directory Organization
+```
+src/
+├── app/                          # Next.js App Router
+│   ├── (protected)/             # Protected routes (requires auth)
+│   ├── api/                     # API routes
+│   │   ├── auth/               # Authentication endpoints
+│   │   └── template/           # Template CRUD endpoints
+│   ├── auth/                   # Auth pages (login, signup)
+│   ├── templates/              # Template-related pages
+│   │   ├── [templateId]/       # Template selection & resume builder
+│   │   └── admin/              # Template admin panel
+│   ├── layout.tsx              # Root layout
+│   └── globals.css             # Global styles (Tailwind v4)
+│
+├── components/                  # React components
+│   ├── pages/                  # Page-specific components
+│   │   ├── auth/               # Auth forms (Login, Signup)
+│   │   ├── home/               # Landing page sections
+│   │   ├── resume-page/        # Resume builder UI
+│   │   │   ├── steps/          # 9-step form wizard
+│   │   │   └── components/     # Action buttons, preview, toolbar
+│   │   ├── resume-layout-page/ # Template creation UI
+│   │   └── templates-page/     # Template listing & filters
+│   ├── providers/              # Context providers
+│   │   ├── app-providers.tsx
+│   │   ├── layout-provider/
+│   │   ├── resume-form-provider/  # Main resume state management
+│   │   └── template-provider/
+│   ├── shared/                 # Reusable components
+│   │   ├── breadcrumb/
+│   │   ├── date-picker/
+│   │   ├── dialogs/            # CRUD dialogs (Experience, Education, etc.)
+│   │   └── resume-cards/       # Display cards for resume items
+│   └── ui/                     # Shadcn/ui components (DO NOT MODIFY)
+│
+├── constants/                   # Application constants
+│   ├── api-urls.ts             # API endpoint URLs
+│   ├── default-template.ts     # Default template config
+│   └── dummy-resume-builder-record.ts  # Test data
+│
+├── interfaces/                  # TypeScript interfaces
+│   ├── resume.ts               # Resume data types
+│   ├── templates.ts            # Template configuration types
+│   └── api-response.interface.ts  # API response wrapper
+│
+├── lib/                         # Utilities and services
+│   ├── services/               # Business logic & API clients
+│   │   ├── api-client.service.ts   # HTTP client wrapper
+│   │   ├── auth.service.ts
+│   │   ├── prisma.service.ts       # Database client
+│   │   └── template.service.ts
+│   ├── validations/            # Zod validation schemas
+│   │   ├── auth.validations.ts
+│   │   ├── resume.validations.ts
+│   │   ├── personal-info.validations.ts
+│   │   ├── experience.validations.ts
+│   │   ├── education.validations.ts
+│   │   ├── skills.validations.ts
+│   │   ├── project.validations.ts
+│   │   ├── certification.validations.ts
+│   │   ├── achievement.validations.ts
+│   │   └── template.validations.ts
+│   ├── utils/                  # Helper functions
+│   │   ├── resume-helpers.ts   # Resume validation utilities
+│   │   ├── template-helpers.ts
+│   │   ├── pdf-export.ts
+│   │   └── dummy-data.ts
+│   └── utils.ts                # General utilities (cn, etc.)
+│
+└── types/                       # Additional type definitions
+
+prisma/
+├── schema.prisma               # Database schema
+├── migrations/                 # Database migrations
+└── seed/                       # Database seeding
+```
+
+---
+
+## 📝 File Naming Conventions
+
+### Component Files
+```
+✅ PascalCase for components:
+  - LoginForm.tsx
+  - ExperienceDialog.tsx
+  - ResumeCard.tsx
+  - ActionButtons.tsx
+
+✅ kebab-case for utility/config files:
+  - api-client.service.ts
+  - resume-helpers.ts
+  - personal-info.validations.ts
+
+✅ index.tsx for barrel exports:
+  - components/shared/dialogs/index.tsx
+  - components/pages/home/index.tsx
+```
+
+### Naming Patterns
+- **Components:** `PascalCase` (e.g., `UserProfile.tsx`)
+- **Hooks:** `camelCase` with `use` prefix (e.g., `useResume.ts`)
+- **Utilities:** `kebab-case` (e.g., `date-formatter.ts`)
+- **Constants:** `SCREAMING_SNAKE_CASE` (e.g., `API_BASE_URL`)
+- **Interfaces/Types:** `PascalCase` (e.g., `ResumeData`, `TemplateConfig`)
+- **Services:** `kebab-case.service.ts` (e.g., `auth.service.ts`)
+- **Validations:** `kebab-case.validations.ts` (e.g., `resume.validations.ts`)
+
+---
+
+## 🎨 Component Development Guidelines
+
+### 1. Component Structure
+```typescript
+// components/pages/example/ExampleComponent.tsx
+"use client"; // Only if needed
+
+import React from "react";
+import { useExample } from "@/hooks/useExample";
+import { Button } from "@/components/ui/button";
+import { ExampleType } from "@/interfaces/example";
+
+interface ExampleComponentProps {
+  id: string;
+  onComplete?: (data: ExampleType) => void;
+}
+
+export const ExampleComponent: React.FC<ExampleComponentProps> = ({
+  id,
+  onComplete,
+}) => {
+  // State and hooks
+  const { data, isLoading } = useExample(id);
+
+  // Event handlers
+  const handleSubmit = () => {
+    // Implementation
+  };
+
+  // Render
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      {/* Component JSX */}
+    </div>
+  );
+};
+```
+
+### 2. Component Checklist
+- ✅ Export as named export (not default)
+- ✅ Define TypeScript interface for props
+- ✅ Use functional components with React.FC
+- ✅ Add JSDoc comments for complex components
+- ✅ Implement error boundaries where needed
+- ✅ Use proper loading and error states
+- ✅ Follow accessibility guidelines (ARIA labels)
+
+---
+
+## 🔄 State Management
+
+### Resume Form Provider Pattern
+**Location:** `src/components/providers/resume-form-provider/index.tsx`
+
+**Key Concepts:**
+1. **Global State:** Use Context API + useReducer for resume data
+2. **Local State:** Use useState for component-specific state
+3. **Form State:** Use react-hook-form for form management
+
+### Available Actions
+```typescript
+// Resume Meta
+UPDATE_RESUME_META: { name: string; description: string }
+
+// Personal Info
+UPDATE_PERSONAL_INFO: PersonalInfo
+
+// Experience CRUD
+ADD_EXPERIENCE: Experience
+UPDATE_EXPERIENCE: { id: string; data: Partial<Experience> }
+REMOVE_EXPERIENCE: string (id)
+REORDER_EXPERIENCE: { id: string; direction: "up" | "down" }
+
+// Education CRUD
+ADD_EDUCATION: Education
+UPDATE_EDUCATION: { id: string; data: Partial<Education> }
+REMOVE_EDUCATION: string (id)
+REORDER_EDUCATION: { id: string; direction: "up" | "down" }
+
+// Skills
+UPDATE_SKILLS: Skills
+
+// Projects CRUD
+ADD_PROJECT: Project
+UPDATE_PROJECT: { id: string; data: Partial<Project> }
+REMOVE_PROJECT: string (id)
+REORDER_PROJECT: { id: string; direction: "up" | "down" }
+
+// Certifications CRUD
+ADD_CERTIFICATION: Certification
+UPDATE_CERTIFICATION: { id: string; data: Partial<Certification> }
+REMOVE_CERTIFICATION: string (id)
+REORDER_CERTIFICATION: { id: string; direction: "up" | "down" }
+
+// Achievements CRUD
+ADD_ACHIEVEMENT: Achievement
+UPDATE_ACHIEVEMENT: { id: string; data: Partial<Achievement> }
+REMOVE_ACHIEVEMENT: string (id)
+REORDER_ACHIEVEMENT: { id: string; direction: "up" | "down" }
+
+// Navigation
+nextStep, prevStep, goToStep(step: number)
+
+// Reset
+RESET_RESUME
+```
+
+### State Management Rules
+- ✅ Use ResumeProvider for global resume state
+- ✅ Use TemplateProvider for template configuration
+- ✅ Use react-hook-form for form validation
+- ✅ Keep component state local when possible
+- ❌ Never mutate state directly
+- ❌ Never store derived data in state
+
+---
+
+## ✅ Form Validation Strategy
+
+### Validation Architecture
+**Validation Library:** Zod v4.1.12
+**Form Library:** React Hook Form v7.65.0
+**Integration:** @hookform/resolvers
+
+### Validation File Structure
+```
+src/lib/validations/
+├── personal-info.validations.ts    # Step 2
+├── experience.validations.ts       # Step 3
+├── education.validations.ts        # Step 4
+├── skillsvalidations.ts           # Step 5
+├── project.validations.ts          # Step 6
+├── certification.validations.ts    # Step 7
+├── achievement.validations.ts      # Step 8
+└── resume.validations.ts           # Complete resume validation
+```
+
+### Form Validation Pattern
+```typescript
+// 1. Define Zod schema
+export const personalInfoSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email"),
+  // ...
+});
+
+// 2. Use with react-hook-form
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+const form = useForm<PersonalInfo>({
+  resolver: zodResolver(personalInfoSchema),
+  mode: "onBlur", // Validate on blur for better UX
+  defaultValues: resumeData.personalInfo,
+});
+
+// 3. Handle submission
+const onSubmit = (data: PersonalInfo) => {
+  dispatch({ type: "UPDATE_PERSONAL_INFO", payload: data });
+  nextStep();
+};
+```
+
+### Step Validation Rules
+**Required Steps (must have data to proceed):**
+1. ✅ Resume Meta (name, description)
+2. ✅ Personal Info (name, email, phone, location, summary 50+ chars)
+3. ✅ Skills (at least 1 technical, 1 soft, 1 language)
+
+**Optional Steps (can skip):**
+- Experience
+- Education
+- Projects
+- Certifications
+- Achievements
+
+### Validation Helpers
+**Location:** `src/lib/utils/resume-helpers.ts`
+
+```typescript
+// Check if step is completed
+getStepValidation(resumeData: ResumeData, step: number): boolean
+
+// Check if user can access a step
+isStepAccessible(resumeData: ResumeData, targetStep: number): boolean
+```
+
+---
+
+## 🎯 Multi-Step Form Architecture
+
+### 9-Step Resume Builder
+**Location:** `src/components/pages/resume-page/steps/`
+
+1. **Resume Meta** (`ResumeMetaStep.tsx`) - Name and description
+2. **Personal Info** (`PersonalInfoStep.tsx`) - Contact details, summary
+3. **Experience** (`ExperienceStep.tsx`) - Work history
+4. **Education** (`EducationStep.tsx`) - Educational background
+5. **Skills** (`SkillsStep.tsx`) - Technical, soft, languages
+6. **Projects** (`ProjectsStep.tsx`) - Personal/professional projects
+7. **Certifications** (`CertificationStep.tsx`) - Certifications
+8. **Achievements** (`AchievementStep.tsx`) - Awards and achievements
+9. **Review** (`ReviewStep.tsx`) - Final review and export
+
+### Step Navigation Rules
+- ✅ Can go back to any previous step
+- ✅ Can only proceed if current step is valid
+- ✅ Can jump to any accessible step via breadcrumb
+- ✅ Show validation errors before allowing next step
+- ✅ Persist data on every step completion
+- ❌ Cannot skip required steps
+- ❌ Cannot access future steps until required steps are complete
+
+### Action Buttons Component
+**Location:** `src/components/pages/resume-page/components/ActionButtons.tsx`
+
+**Responsibilities:**
+- Handle step navigation (Previous/Next/Review)
+- Trigger form submission via hidden submit button
+- Show appropriate buttons based on current step
+- Disable next button if step is invalid
+
+---
+
+## 🗄️ Database & Prisma
+
+### Schema Structure
+**Location:** `prisma/schema.prisma`
+
+**Models:**
+1. **User** - Authentication and user management
+2. **Template** - Resume templates with full configuration
+3. **Resume** - User-created resumes with template snapshots
+
+### Prisma Best Practices
+```typescript
+// ✅ Use Prisma Client singleton
+import { prisma } from "@/lib/services/prisma.service";
+
+// ✅ Use transactions for multiple operations
+await prisma.$transaction([
+  prisma.user.create({ data: userData }),
+  prisma.resume.create({ data: resumeData }),
+]);
+
+// ✅ Use proper error handling
+try {
+  const user = await prisma.user.findUnique({ where: { id } });
+} catch (error) {
+  // Handle Prisma errors
+}
+
+// ❌ Don't create multiple Prisma instances
+```
+
+### Database Commands
+```bash
+npm run db:generate      # Generate Prisma Client
+npm run db:migrate       # Run migrations (dev)
+npm run db:migrate:deploy # Deploy migrations (prod)
+npm run db:push          # Push schema without migration
+npm run db:seed          # Seed database with test data
+npm run db:reset         # Reset database (dev only)
+npm run db:studio        # Open Prisma Studio
+```
+
+### Migration Workflow
+1. Modify `schema.prisma`
+2. Run `npm run db:migrate` with descriptive name
+3. Review generated migration SQL
+4. Test migration on development database
+5. Commit both schema and migration files
+
+---
+
+## 🌐 API Design Patterns
+
+### API Route Structure
+**Location:** `src/app/api/`
+
+```
+api/
+├── route.ts                    # Health check
+├── auth/
+│   └── signup/route.ts        # POST /api/auth/signup
+└── template/
+    ├── route.ts               # GET, POST /api/template
+    └── [id]/route.ts          # GET, PUT, DELETE /api/template/:id
+```
+
+### API Response Format
+**Interface:** `src/interfaces/api-response.interface.ts`
+
+```typescript
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+  meta?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    pageSize: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    nextPage: number;
+    previousPage: number;
+  };
+}
+```
+
+### API Route Example
+```typescript
+// src/app/api/template/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/services/prisma.service";
+import { templateSchema } from "@/lib/validations/template.validations";
+
+export async function GET(request: NextRequest) {
+  try {
+    const templates = await prisma.template.findMany({
+      where: { isPublished: true, isActive: true },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: templates,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "FETCH_ERROR",
+          message: "Failed to fetch templates",
+        },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    
+    // Validate with Zod
+    const validated = templateSchema.parse(body);
+    
+    const template = await prisma.template.create({
+      data: validated,
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: template,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid request data",
+            details: error.errors,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "CREATE_ERROR",
+          message: "Failed to create template",
+        },
+      },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### API Client Usage
+**Location:** `src/lib/services/api-client.service.ts`
+
+```typescript
+import { apiClient } from "@/lib/services/api-client.service";
+import { API_URLS } from "@/constants/api-urls";
+
+// GET request
+const response = await apiClient.get<TemplateConfig>(
+  `${API_URLS.TEMPLATE}/${id}`
+);
+
+// POST request
+const response = await apiClient.post<TemplateConfig>(
+  API_URLS.TEMPLATE,
+  templateData
+);
+
+// Error handling
+try {
+  const response = await apiClient.get<TemplateConfig>("/api/template");
+  console.log(response.data);
+} catch (error) {
+  if (error instanceof ApiError) {
+    console.error(error.status, error.code, error.message);
+  }
+}
+```
+
+---
+
+## 🎨 Styling Guidelines
+
+### Tailwind CSS 4 Setup
+**Configuration:** `src/app/globals.css`
+
+```css
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* CSS custom properties */
+}
+```
+
+### Styling Best Practices
+```typescript
+// ✅ Use cn() utility for conditional classes
+import { cn } from "@/lib/utils";
+
+<div className={cn(
+  "base-classes",
+  isActive && "active-classes",
+  disabled && "disabled-classes"
+)} />
+
+// ✅ Use Tailwind utility classes
+<div className="flex items-center justify-between px-4 py-2" />
+
+// ✅ Use CSS variables for theme values
+<div style={{ color: "var(--color-primary)" }} />
+
+// ❌ Avoid inline styles unless dynamic
+<div style={{ width: "100px" }} /> // Bad
+<div className="w-[100px]" />     // Good
+
+// ❌ Don't use arbitrary values when utility exists
+<div className="p-[16px]" />  // Bad
+<div className="p-4" />       // Good (4 = 16px)
+```
+
+### Responsive Design
+```typescript
+// Mobile-first approach
+<div className="
+  flex flex-col           // Mobile: column
+  md:flex-row            // Tablet: row
+  lg:gap-8               // Desktop: larger gap
+  xl:max-w-7xl          // Extra large: max width
+" />
+```
+
+### Component Styling Pattern
+```typescript
+// Use cva for component variants
+import { cva, type VariantProps } from "class-variance-authority";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md transition-colors",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground",
+        destructive: "bg-destructive text-destructive-foreground",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 px-3",
+        lg: "h-11 px-8",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+```
+
+---
+
+## 🔒 Authentication & Security
+
+### Authentication Flow
+**Status:** Currently mock authentication in header
+**Planned:** Full JWT-based authentication with NextAuth.js
+
+### User Model Fields
+```typescript
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  userName: string;  // unique
+  email: string;     // unique
+  password: string;  // hashed with bcryptjs
+  avatar?: string;
+  bio?: string;
+  phone?: string;
+  emailVerified: boolean;
+  otp?: string;
+  otpExpiredAt?: Date;
+  isActive: boolean;
+  isBanned: boolean;
+  role: "user" | "admin";
+  lastLoginAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Password Security
+```typescript
+import bcrypt from "bcryptjs";
+
+// ✅ Hash passwords before storing
+const hashedPassword = await bcrypt.hash(password, 10);
+
+// ✅ Compare passwords during login
+const isValid = await bcrypt.compare(password, hashedPassword);
+
+// ❌ Never store plain text passwords
+// ❌ Never log passwords
+// ❌ Never send passwords in API responses
+```
+
+### Protected Routes
+**Location:** `src/app/(protected)/`
+
+```typescript
+// Protected layout
+// src/app/(protected)/layout.tsx
+export default function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // TODO: Add auth check
+  // const session = await getServerSession();
+  // if (!session) redirect("/auth/login");
+  
+  return <>{children}</>;
+}
+```
+
+---
+
+## 📦 Dependency Management
+
+### Core Dependencies
+```json
+{
+  "next": "15.5.5",                    // Framework
+  "react": "19.1.0",                   // UI library
+  "react-dom": "19.1.0",
+  "typescript": "^5",                  // Type safety
+  
+  "prisma": "^6.18.0",                // Database ORM
+  "@prisma/client": "^6.18.0",
+  
+  "react-hook-form": "^7.65.0",       // Form management
+  "zod": "^4.1.12",                   // Validation
+  "@hookform/resolvers": "^5.2.2",    // Form + Zod integration
+  
+  "tailwindcss": "^4",                // Styling
+  "@tailwindcss/postcss": "^4",
+  
+  "lucide-react": "^0.545.0",         // Icons
+  "date-fns": "^4.1.0",               // Date utilities
+  "clsx": "^2.1.1",                   // Class utilities
+  "tailwind-merge": "^3.3.1",
+  
+  "bcryptjs": "^3.0.2",               // Password hashing
+  "jspdf": "^2.5.2",                  // PDF generation
+  "html2canvas": "^1.4.1",            // HTML to canvas
+  
+  "sonner": "^2.0.7",                 // Toast notifications
+  "next-themes": "^0.4.6"             // Theme management
+}
+```
+
+### Radix UI Components (Shadcn)
+```json
+{
+  "@radix-ui/react-dialog": "^1.1.15",
+  "@radix-ui/react-dropdown-menu": "^2.1.16",
+  "@radix-ui/react-label": "^2.1.7",
+  "@radix-ui/react-select": "^2.2.6",
+  "@radix-ui/react-checkbox": "^1.3.3",
+  "@radix-ui/react-radio-group": "^1.3.8",
+  "@radix-ui/react-switch": "^1.2.6",
+  "@radix-ui/react-tabs": "^1.1.13",
+  "@radix-ui/react-popover": "^1.1.15",
+  "@radix-ui/react-scroll-area": "^1.2.10",
+  "@radix-ui/react-separator": "^1.1.7",
+  "@radix-ui/react-slot": "^1.2.3",
+  "@radix-ui/react-avatar": "^1.1.10"
+}
+```
+
+### Installation Guidelines
+```bash
+# ✅ Add new dependencies with exact versions
+npm install package@1.2.3
+
+# ✅ Update dependencies carefully
+npm update package
+
+# ✅ Check for security vulnerabilities
+npm audit
+
+# ❌ Don't install unnecessary packages
+# ❌ Don't use wildcard versions in production
+# ❌ Don't commit node_modules
+```
+
+---
+
+## 🧪 Testing Strategy (Future Implementation)
+
+### Testing Libraries to Add
+```bash
+npm install --save-dev @testing-library/react
+npm install --save-dev @testing-library/jest-dom
+npm install --save-dev @testing-library/user-event
+npm install --save-dev vitest
+```
+
+### Test File Naming
+```
+src/
+├── components/
+│   ├── Button.tsx
+│   └── Button.test.tsx           # Unit test
+├── lib/
+│   ├── utils.ts
+│   └── utils.test.ts             # Unit test
+└── __tests__/
+    ├── integration/              # Integration tests
+    └── e2e/                      # End-to-end tests
+```
+
+### Test Coverage Goals
+- ✅ 80%+ coverage for utility functions
+- ✅ 70%+ coverage for business logic
+- ✅ Critical paths must have tests
+- ✅ All validation schemas must have tests
+
+---
+
+## 🚀 Development Workflow
+
+### Development Commands
+```bash
+# Development
+npm run dev                    # Start dev server with Turbopack
+npm run build                  # Build production bundle
+npm run start                  # Start production server
+npm run lint                   # Run ESLint
+
+# Database
+npm run db:generate            # Generate Prisma Client
+npm run db:migrate             # Create and apply migration
+npm run db:migrate:deploy      # Deploy migrations (production)
+npm run db:migrate:create      # Create migration without applying
+npm run db:push                # Push schema without migration
+npm run db:seed                # Seed database with test data
+npm run db:reset               # Reset database (CAUTION!)
+npm run db:studio              # Open Prisma Studio
+```
+
+### Development Server
+- **URL:** http://localhost:3000
+- **Build Tool:** Turbopack (faster than Webpack)
+- **Hot Reload:** Enabled by default
+
+### Environment Setup
+**Required Environment Variables:**
+```bash
+# .env.local (create this file)
+DATABASE_URL="postgresql://user:password@localhost:5432/resumebuilder"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Future variables
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+**Environment File Priority:**
+1. `.env.local` (local overrides, gitignored)
+2. `.env.development` (development only)
+3. `.env.production` (production only)
+4. `.env` (default for all environments)
+
+---
+
+## 📐 Template System Architecture
+
+### Template Configuration
+**Interface:** `src/interfaces/templates.ts`
+
+**Key Concepts:**
+1. **Layout Types:** Single-column, Two-column (various ratios), Three-column
+2. **Section Positioning:** Left, Right, Center, Full-width
+3. **Permissions:** Control what users can customize
+4. **Section Configs:** Per-section display options
+
+### Template Permissions
+```typescript
+interface TemplatePermissions {
+  canChangeColors: boolean;          // Color scheme
+  canChangeFonts: boolean;           // Typography
+  canChangeLayout: boolean;          // Column layout
+  canChangeSections: boolean;        // Add/remove sections
+  canChangeSectionConfig: boolean;   // Section settings
+  canChangeSpacing: boolean;         // Margins and padding
+  canChangeBorders: boolean;         // Border styles
+}
+```
+
+### Section Configuration Pattern
+```typescript
+interface SectionConfig {
+  type: SectionType;                 // "experience", "education", etc.
+  position: SectionPosition;         // "left", "right", "center", "full-width"
+  order: number;                     // Order within position
+  visibility: boolean;               // Show/hide section
+  required: boolean;                 // Must have content
+  customLabel?: string;              // Override default label
+}
+```
+
+### Creating a New Template
+```typescript
+import { TemplateConfig, CreateTemplateInput } from "@/interfaces/templates";
+
+const newTemplate: CreateTemplateInput = {
+  name: "Modern Professional",
+  description: "Clean and modern template for professionals",
+  thumbnail: "/templates/modern-professional.png",
+  categories: ["Modern", "Professional"],
+  
+  pricing: {
+    isPaid: false,
+    tier: "free",
+  },
+  
+  permissions: {
+    canChangeColors: true,
+    canChangeFonts: true,
+    canChangeLayout: false,  // Fixed layout
+    canChangeSections: true,
+    canChangeSectionConfig: true,
+    canChangeSpacing: false,
+    canChangeBorders: false,
+  },
+  
+  layout: {
+    type: "two-column-left-heavy",
+    columnRatio: { left: 60, right: 40 },
+    gap: "2rem",
+    sections: [
+      {
+        type: "personal-info",
+        position: "full-width",
+        order: 0,
+        visibility: true,
+        required: true,
+      },
+      {
+        type: "experience",
+        position: "left",
+        order: 1,
+        visibility: true,
+        required: false,
+      },
+      // ... more sections
+    ],
+  },
+  
+  colors: {
+    primary: "#2563eb",
+    secondary: "#64748b",
+    accent: "#0ea5e9",
+    text: "#1e293b",
+    textLight: "#64748b",
+    background: "#ffffff",
+    border: "#e2e8f0",
+    link: "#2563eb",
+  },
+  
+  typography: {
+    headingFont: "Inter",
+    bodyFont: "Inter",
+    nameSize: "4xl",
+    nameWeight: "bold",
+    headingSize: "xl",
+    headingWeight: "semibold",
+    headingUppercase: true,
+    headingUnderline: false,
+    subheadingSize: "lg",
+    subheadingWeight: "medium",
+    lineHeight: "relaxed",
+    showIcons: true,
+    showDividers: true,
+  },
+  
+  // Section-specific configs
+  personalInfoConfig: { /* ... */ },
+  experienceConfig: { /* ... */ },
+  educationConfig: { /* ... */ },
+  skillsConfig: { /* ... */ },
+  projectsConfig: { /* ... */ },
+  certificationsConfig: { /* ... */ },
+  achievementsConfig: { /* ... */ },
+};
+```
+
+---
+
+## 🐛 Error Handling
+
+### Error Handling Pattern
+```typescript
+// API Routes
+try {
+  const result = await someOperation();
+  return NextResponse.json({
+    success: true,
+    data: result,
+  });
+} catch (error) {
+  console.error("Operation failed:", error);
+  
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid request data",
+          details: error.errors,
+        },
+      },
+      { status: 400 }
+    );
+  }
+  
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "DATABASE_ERROR",
+          message: "Database operation failed",
+          details: error.message,
+        },
+      },
+      { status: 500 }
+    );
+  }
+  
+  return NextResponse.json(
+    {
+      success: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "An unexpected error occurred",
+      },
+    },
+    { status: 500 }
+  );
+}
+```
+
+### Client-Side Error Handling
+```typescript
+import { ApiError } from "@/lib/services/api-client.service";
+import { toast } from "sonner";
+
+try {
+  const response = await apiClient.post("/api/template", data);
+  toast.success("Template created successfully");
+} catch (error) {
+  if (error instanceof ApiError) {
+    // Handle API errors
+    toast.error(error.message);
+    console.error(`API Error [${error.code}]:`, error.details);
+  } else {
+    // Handle unexpected errors
+    toast.error("An unexpected error occurred");
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+### Toast Notifications
+**Library:** Sonner
+
+```typescript
+import { toast } from "sonner";
+
+// Success
+toast.success("Resume saved successfully");
+
+// Error
+toast.error("Failed to save resume");
+
+// Info
+toast.info("Please complete all required fields");
+
+// Warning
+toast.warning("Unsaved changes will be lost");
+
+// Loading
+const promise = toast.promise(
+  saveResume(),
+  {
+    loading: "Saving resume...",
+    success: "Resume saved successfully",
+    error: "Failed to save resume",
+  }
+);
+```
+
+---
+
+## ♿ Accessibility Guidelines
+
+### ARIA Labels
+```typescript
+// ✅ Add ARIA labels to interactive elements
+<button aria-label="Close dialog">
+  <X />
+</button>
+
+<input
+  type="text"
+  aria-label="Email address"
+  aria-describedby="email-help"
+/>
+
+<div id="email-help" className="text-sm text-muted-foreground">
+  We'll never share your email
+</div>
+```
+
+### Keyboard Navigation
+- ✅ All interactive elements must be keyboard accessible
+- ✅ Implement proper tab order
+- ✅ Add visible focus indicators
+- ✅ Support Escape key to close dialogs
+- ✅ Support Enter key to submit forms
+
+### Semantic HTML
+```typescript
+// ✅ Use semantic HTML elements
+<main>
+  <article>
+    <header>
+      <h1>Page Title</h1>
+    </header>
+    <section>
+      <h2>Section Title</h2>
+      <p>Content...</p>
+    </section>
+  </article>
+</main>
+
+// ❌ Avoid div soup
+<div>
+  <div>
+    <div>Title</div>
+  </div>
+</div>
+```
+
+---
+
+## 📊 Performance Optimization
+
+### Next.js Image Optimization
+```typescript
+import Image from "next/image";
+
+// ✅ Use Next.js Image component
+<Image
+  src="/templates/modern.png"
+  alt="Modern template"
+  width={400}
+  height={600}
+  priority={false}
+  loading="lazy"
+/>
+
+// ❌ Don't use regular img tags for static images
+<img src="/templates/modern.png" alt="Modern template" />
+```
+
+### Code Splitting
+```typescript
+// ✅ Dynamic imports for large components
+import dynamic from "next/dynamic";
+
+const HeavyComponent = dynamic(
+  () => import("@/components/HeavyComponent"),
+  { loading: () => <div>Loading...</div> }
+);
+
+// ✅ Lazy load non-critical components
+const PDFExport = dynamic(
+  () => import("@/lib/utils/pdf-export"),
+  { ssr: false }
+);
+```
+
+### React Optimization
+```typescript
+// ✅ Memoize expensive computations
+const expensiveValue = useMemo(
+  () => computeExpensiveValue(data),
+  [data]
+);
+
+// ✅ Memoize callback functions
+const handleClick = useCallback(
+  () => handleAction(id),
+  [id]
+);
+
+// ✅ Memoize components to prevent re-renders
+const MemoizedComponent = React.memo(Component);
+```
+
+---
+
+## 🔍 SEO Best Practices
+
+### Metadata Configuration
+```typescript
+// app/layout.tsx or app/page.tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ResumeCraft - AI-Powered Resume Builder",
+  description: "Create professional resumes with AI assistance",
+  keywords: ["resume", "CV", "job", "career", "AI"],
+  authors: [{ name: "Your Name" }],
+  openGraph: {
+    title: "ResumeCraft",
+    description: "Create professional resumes with AI assistance",
+    url: "https://resumecraft.com",
+    siteName: "ResumeCraft",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ResumeCraft",
+    description: "Create professional resumes with AI assistance",
+    images: ["/twitter-image.png"],
+  },
+};
+```
+
+### Structured Data
+```typescript
+// Add JSON-LD structured data
+export default function Page() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ResumeCraft",
+    "description": "AI-Powered Resume Builder",
+    "url": "https://resumecraft.com",
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData),
+        }}
+      />
+      {/* Page content */}
+    </>
+  );
+}
+```
+
+---
+
+## 🔐 Security Best Practices
+
+### Input Validation
+```typescript
+// ✅ Always validate and sanitize user input
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+});
+
+const validated = schema.parse(userInput);
+```
+
+### SQL Injection Prevention
+```typescript
+// ✅ Use Prisma parameterized queries (built-in protection)
+const user = await prisma.user.findUnique({
+  where: { email: userEmail },  // Safe
+});
+
+// ❌ Never use raw SQL with user input
+const user = await prisma.$queryRaw`
+  SELECT * FROM users WHERE email = ${userEmail}
+`; // Dangerous!
+```
+
+### XSS Prevention
+```typescript
+// ✅ React escapes by default
+<div>{userInput}</div>  // Safe
+
+// ⚠️ Be careful with dangerouslySetInnerHTML
+<div dangerouslySetInnerHTML={{ __html: sanitizedHTML }} />
+
+// ✅ Use a sanitization library if needed
+import DOMPurify from "dompurify";
+const sanitized = DOMPurify.sanitize(userHTML);
+```
+
+### Environment Variables
+```typescript
+// ✅ Never expose secrets to client
+// Server-only (no NEXT_PUBLIC_ prefix)
+const dbUrl = process.env.DATABASE_URL;
+
+// Client-accessible (NEXT_PUBLIC_ prefix)
+const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+// ❌ Never commit .env files to git
+// ✅ Use .env.example for documentation
+```
+
+---
+
+## 📝 Code Documentation
+
+### Component Documentation
+```typescript
+/**
+ * ExperienceDialog Component
+ * 
+ * A dialog component for adding/editing work experience entries.
+ * Includes form validation, date pickers, and dynamic skill/achievement lists.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Controls dialog visibility
+ * @param {Experience | null} props.experience - Existing experience to edit (null for new)
+ * @param {Function} props.onSave - Callback when experience is saved
+ * @param {Function} props.onClose - Callback when dialog is closed
+ * 
+ * @example
+ * <ExperienceDialog
+ *   open={isOpen}
+ *   experience={selectedExperience}
+ *   onSave={handleSave}
+ *   onClose={handleClose}
+ * />
+ */
+export const ExperienceDialog: React.FC<ExperienceDialogProps> = ({
+  open,
+  experience,
+  onSave,
+  onClose,
+}) => {
+  // Implementation
+};
+```
+
+### Function Documentation
+```typescript
+/**
+ * Validates if a resume step is complete and accessible.
+ * 
+ * @param {ResumeData} resumeData - The complete resume data object
+ * @param {number} step - The step number to validate (1-9)
+ * @returns {boolean} True if step is valid and complete
+ * 
+ * @example
+ * const isValid = getStepValidation(resumeData, 2);
+ * if (!isValid) {
+ *   toast.error("Please complete the personal info section");
+ * }
+ */
+export function getStepValidation(
+  resumeData: ResumeData,
+  step: number
+): boolean {
+  // Implementation
+}
+```
+
+### Type Documentation
+```typescript
+/**
+ * Resume Data Interface
+ * 
+ * Complete structure for storing resume information.
+ * Used across the application for type safety and validation.
+ */
+export interface ResumeData {
+  /** Resume name/title */
+  name: string;
+  
+  /** Optional description of the resume */
+  description: string;
+  
+  /** Personal contact information */
+  personalInfo: PersonalInfo;
+  
+  /** Array of work experiences */
+  experience: Experience[];
+  
+  /** Array of educational qualifications */
+  education: Education[];
+  
+  /** Skills categorized by type */
+  skills: Skills;
+  
+  /** Array of projects */
+  projects: Project[];
+  
+  /** Array of certifications */
+  certifications: Certification[];
+  
+  /** Array of achievements and awards */
+  achievements: Achievement[];
+}
+```
+
+---
+
+## 🚨 Common Pitfalls & Solutions
+
+### 1. Client vs Server Components
+```typescript
+// ❌ Problem: Using hooks in server component
+export default function Page() {
+  const [state, setState] = useState(); // Error!
+  return <div>{state}</div>;
+}
+
+// ✅ Solution: Add "use client" directive
+"use client";
+export default function Page() {
+  const [state, setState] = useState(); // Works!
+  return <div>{state}</div>;
+}
+```
+
+### 2. Prisma Client Initialization
+```typescript
+// ❌ Problem: Multiple Prisma instances
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient(); // Creates new instance each time
+
+// ✅ Solution: Use singleton pattern
+// lib/services/prisma.service.ts
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["query"] : [],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+### 3. Form Validation with Zod
+```typescript
+// ❌ Problem: Not handling validation errors
+const data = schema.parse(input); // Throws error
+
+// ✅ Solution: Use safeParse for error handling
+const result = schema.safeParse(input);
+if (!result.success) {
+  console.error(result.error.errors);
+  return;
+}
+const data = result.data;
+```
+
+### 4. React Hook Dependencies
+```typescript
+// ❌ Problem: Missing dependencies
+useEffect(() => {
+  fetchData(id);
+}, []); // id should be in dependencies
+
+// ✅ Solution: Include all dependencies
+useEffect(() => {
+  fetchData(id);
+}, [id]);
+```
+
+### 5. Date Handling
+```typescript
+// ❌ Problem: Storing Date objects in JSON
+const data = { date: new Date() }; // JSON.stringify converts to string
+
+// ✅ Solution: Use date-fns for formatting
+import { format, parseISO } from "date-fns";
+
+// Store as ISO string
+const data = { date: new Date().toISOString() };
+
+// Display formatted
+const formatted = format(parseISO(data.date), "MMM yyyy");
+```
+
+---
+
+## 🎓 Learning Resources
+
+### Official Documentation
+- Next.js 15: https://nextjs.org/docs
+- React 19: https://react.dev
+- TypeScript: https://www.typescriptlang.org/docs
+- Tailwind CSS 4: https://tailwindcss.com/docs
+- Prisma: https://www.prisma.io/docs
+- Zod: https://zod.dev
+- React Hook Form: https://react-hook-form.com
+- Shadcn/ui: https://ui.shadcn.com
+
+### Recommended Patterns
+- Server Actions: https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions
+- API Routes: https://nextjs.org/docs/app/building-your-application/routing/route-handlers
+- Form Handling: https://react-hook-form.com/get-started
+- Database Queries: https://www.prisma.io/docs/concepts/components/prisma-client
+
+---
+
+## 📋 Checklist Before Committing
+
+### Pre-Commit Checklist
+- [ ] Run `npm run lint` and fix all errors
+- [ ] Remove all `console.log` statements
+- [ ] Remove unused imports and variables
+- [ ] Ensure all TypeScript errors are resolved
+- [ ] Test the feature manually
+- [ ] Check responsive design on mobile/tablet
+- [ ] Verify accessibility (keyboard navigation, ARIA labels)
+- [ ] Update relevant documentation/comments
+- [ ] Ensure no sensitive data in code
+- [ ] Check for any TODO comments that should be addressed
+
+### Code Review Checklist
+- [ ] Code follows project structure and naming conventions
+- [ ] TypeScript types are properly defined
+- [ ] Error handling is implemented
+- [ ] Validation schemas are used for user input
+- [ ] Loading and error states are handled
+- [ ] Component is properly memoized if needed
+- [ ] No prop drilling (use context if needed)
+- [ ] Tailwind classes are used correctly
+- [ ] No magic numbers or strings (use constants)
+- [ ] Code is DRY (Don't Repeat Yourself)
+
+---
+
+## 🎯 Current Implementation Status
+
+### ✅ Completed Features
+1. ✅ 9-step resume builder with form wizard
+2. ✅ All CRUD operations for resume sections
+3. ✅ Form validation with Zod schemas
+4. ✅ Step navigation with validation checks
+5. ✅ Reordering items (experience, education, etc.)
+6. ✅ Dummy data for testing
+7. ✅ Responsive layout
+8. ✅ All dialog forms (Experience, Education, etc.)
+9. ✅ Database schema with Prisma
+10. ✅ Authentication UI (Login, Signup)
+11. ✅ Template interface and types
+12. ✅ API client service
+13. ✅ Basic template admin UI
+
+### 🚧 Pending Features
+1. ⏳ Resume preview panel (currently placeholder)
+2. ⏳ PDF export functionality
+3. ⏳ Template listing page implementation
+4. ⏳ Template selection and application
+5. ⏳ Save/load resume functionality
+6. ⏳ AI-powered features
+7. ⏳ Complete authentication system
+8. ⏳ Dashboard and profile pages
+9. ⏳ Pricing page
+10. ⏳ Email verification (OTP system)
+
+### 🗺️ Development Priorities
+**Phase 1: Core Functionality**
+- [ ] Implement resume preview panel
+- [ ] Add PDF export using jsPDF
+- [ ] Implement save/load resume to database
+- [ ] Complete authentication flow with NextAuth.js
+
+**Phase 2: Template System**
+- [ ] Create default templates
+- [ ] Implement template listing page
+- [ ] Add template selection flow
+- [ ] Implement template rendering engine
+- [ ] Add template customization based on permissions
+
+**Phase 3: User Features**
+- [ ] Build user dashboard
+- [ ] Add resume management (list, edit, delete)
+- [ ] Implement profile page
+- [ ] Add email verification
+
+**Phase 4: Advanced Features**
+- [ ] Integrate AI features (suggestions, improvement tips)
+- [ ] Add resume analytics
+- [ ] Implement sharing functionality
+- [ ] Add export to multiple formats
+
+**Phase 5: Polish & Launch**
+- [ ] Add comprehensive testing
+- [ ] Performance optimization
+- [ ] SEO optimization
+- [ ] Documentation
+- [ ] Deployment setup
+
+---
+
+## 🤝 Contribution Guidelines
+
+### Git Workflow
+```bash
+# 1. Create feature branch
+git checkout -b feature/resume-preview
+
+# 2. Make changes and commit
+git add .
+git commit -m "feat: implement resume preview panel"
+
+# 3. Push to remote
+git push origin feature/resume-preview
+
+# 4. Create pull request
+```
+
+### Commit Message Convention
+```
+feat: Add new feature
+fix: Fix bug
+docs: Update documentation
+style: Format code (no logic change)
+refactor: Refactor code
+test: Add tests
+chore: Update dependencies, configs
+```
+
+### Branch Naming
+```
+feature/feature-name    # New features
+bugfix/bug-description  # Bug fixes
+hotfix/critical-bug     # Critical fixes
+refactor/area-name      # Code refactoring
+docs/documentation      # Documentation updates
+```
+
+---
+
+## 🎨 UI/UX Guidelines
+
+### Design Principles
+1. **Simplicity:** Keep interfaces clean and intuitive
+2. **Consistency:** Use consistent patterns across the app
+3. **Feedback:** Provide immediate feedback for user actions
+4. **Accessibility:** Ensure all users can access features
+5. **Performance:** Optimize for fast loading and interactions
+
+### Component States
+Every interactive component should have:
+- **Default State:** Normal appearance
+- **Hover State:** Visual feedback on hover
+- **Active/Focus State:** Clear indication when focused
+- **Disabled State:** Visually disabled appearance
+- **Loading State:** Show loading indicators
+- **Error State:** Display error messages clearly
+
+### Form UX Best Practices
+```typescript
+// ✅ Good form UX
+- Label every input clearly
+- Show validation errors below fields
+- Validate on blur, not on every keystroke
+- Disable submit button while loading
+- Show success message after submission
+- Preserve form data on navigation
+- Use appropriate input types (email, tel, date)
+- Provide helpful placeholder text
+- Group related fields together
+
+// ❌ Bad form UX
+- No labels or unclear labels
+- Validation errors at top of form only
+- Aggressive validation on every keystroke
+- No feedback during submission
+- Clear form data unexpectedly
+- Generic input types for everything
+- No guidance or examples
+```
+
+---
+
+## 🔧 Debugging Tips
+
+### React DevTools
+```typescript
+// Enable React DevTools
+// Install: https://react.dev/learn/react-developer-tools
+
+// Debugging props and state
+console.log("Props:", props);
+console.log("State:", state);
+
+// Performance profiling
+// Use React DevTools Profiler tab
+```
+
+### Prisma Debugging
+```typescript
+// Enable query logging
+const prisma = new PrismaClient({
+  log: ["query", "info", "warn", "error"],
+});
+
+// Check generated SQL
+const result = await prisma.$queryRaw`SELECT * FROM users`;
+```
+
+### Network Debugging
+```typescript
+// Log API requests
+fetch(url, options).then(response => {
+  console.log("Status:", response.status);
+  console.log("Headers:", response.headers);
+  return response.json();
+});
+
+// Use browser DevTools Network tab for detailed inspection
+```
+
+---
+
+## 🎓 Quick Reference
+
+### Import Aliases
+```typescript
+@/*                     → src/*
+@/components/*          → src/components/*
+@/lib/*                 → src/lib/*
+@/interfaces/*          → src/interfaces/*
+@/constants/*           → src/constants/*
+@/hooks/*               → src/hooks/*
+```
+
+### Common Utilities
+```typescript
+import { cn } from "@/lib/utils";                    // Class merger
+import { apiClient } from "@/lib/services/api-client.service";  // HTTP client
+import { prisma } from "@/lib/services/prisma.service";  // Database
+import { format } from "date-fns";                   // Date formatting
+import { toast } from "sonner";                      // Notifications
+```
+
+### Keyboard Shortcuts (Development)
+```
+Ctrl/Cmd + C        → Stop dev server
+Ctrl/Cmd + K        → Clear terminal
+Ctrl/Cmd + Shift + P → Command palette (VSCode)
+Ctrl/Cmd + P        → Quick file open (VSCode)
+Ctrl/Cmd + B        → Toggle sidebar (VSCode)
+```
+
+---
+
+## 📞 Support & Contact
+
+### Getting Help
+1. Check this rule set first
+2. Search official documentation
+3. Check existing issues/PRs
+4. Ask in team chat
+5. Create detailed issue with reproduction steps
+
+### Useful Links
+- Project Repository: [GitHub URL]
+- Documentation: [Docs URL]
+- API Documentation: [API Docs URL]
+- Design System: [Figma URL]
+
+---
+
+**Last Updated:** [Current Date]
+**Version:** 1.0.0
+**Maintainer:** [Your Name/Team]
+
+---
+
+## 🎉 Happy Coding!
+
+Remember:
+- Write clean, readable code
+- Follow TypeScript best practices
+- Test your changes thoroughly
+- Document complex logic
+- Ask questions when unsure
+- Have fun building! 🚀
