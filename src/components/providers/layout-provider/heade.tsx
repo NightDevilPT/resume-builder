@@ -8,28 +8,32 @@ import {
 	User,
 	LogOut,
 	User as UserIcon,
+	Settings,
+	LayoutDashboard,
+	CheckCircle2,
+	AlertCircle,
+	Shield,
+	Loader2,
 } from "lucide-react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthContext } from "@/components/providers/auth-provider";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
-// Mock user data - replace with actual authentication logic
-const useAuth = () => {
-	// For demo purposes - replace with your actual auth state
-	const [user, setUser] = useState<{ name: string; email: string } | null>(
-		null
-	);
-
-	return {
-		user,
-		isAuthenticated: !!user,
-		login: () => setUser({ name: "John Doe", email: "john@example.com" }),
-		logout: () => setUser(null),
-	};
-};
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navigation = [
 	{
@@ -55,7 +59,52 @@ const navigation = [
 export function HeaderComponent() {
 	const [isOpen, setIsOpen] = useState(false);
 	const pathname = usePathname();
-	const { user, isAuthenticated, login, logout } = useAuth();
+	const router = useRouter();
+	const {
+		user,
+		isAuthenticated,
+		isLoading,
+		logout: logoutUser,
+	} = useAuthContext();
+
+	// Handle logout
+	const handleLogout = async () => {
+		try {
+			// Show loading toast
+			const loadingToast = toast.loading("Signing out...");
+
+			// Call logout (clears cookies and local state)
+			await logoutUser();
+
+			// Dismiss loading toast
+			toast.dismiss(loadingToast);
+
+			// Show success message
+			toast.success("Logged out successfully", {
+				description: "You have been signed out of your account",
+			});
+
+			// Redirect to home
+			router.push("/");
+		} catch (error) {
+			console.error("[LOGOUT_ERROR]:", error);
+			toast.error("Failed to logout", {
+				description: "Please try again",
+			});
+		}
+	};
+
+	// Get user initials for avatar fallback
+	const getUserInitials = () => {
+		if (!user) return "U";
+		return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+	};
+
+	// Get full name
+	const getFullName = () => {
+		if (!user) return "";
+		return user.fullName || `${user.firstName} ${user.lastName}`;
+	};
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,7 +119,7 @@ export function HeaderComponent() {
 					</Link>
 
 					{/* Desktop Navigation */}
-					<nav className="hidden xl:flex items-center space-x-4">
+					<nav className="hidden xl:flex items-center space-x-1">
 						{navigation.map((item) => {
 							const isActive = pathname === item.href;
 							return (
@@ -79,11 +128,12 @@ export function HeaderComponent() {
 									asChild
 									variant={isActive ? "secondary" : "ghost"}
 									size="sm"
+									className={cn(
+										"gap-2",
+										isActive && "font-semibold"
+									)}
 								>
-									<Link
-										href={item.href}
-										className="flex items-center gap-2"
-									>
+									<Link href={item.href}>
 										<item.icon className="h-4 w-4" />
 										{item.name}
 									</Link>
@@ -93,61 +143,171 @@ export function HeaderComponent() {
 					</nav>
 
 					{/* Right Side - User Auth & Create Resume */}
-					<div className="flex items-center gap-4">
+					<div className="flex items-center gap-3">
 						{/* Desktop - Create Resume Button */}
-						<div className="hidden xl:flex">
-							<Button asChild size="sm">
-								<Link href="/create-resume">Create Resume</Link>
-							</Button>
-						</div>
+						{isAuthenticated && (
+							<div className="hidden xl:flex">
+								<Button asChild size="sm" className="gap-2">
+									<Link href="/create-resume">
+										<FileText className="h-4 w-4" />
+										Create Resume
+									</Link>
+								</Button>
+							</div>
+						)}
 
 						{/* Desktop - User Authentication */}
-						<div className="hidden xl:flex items-center gap-2">
-							{isAuthenticated ? (
-								<div className="flex items-center gap-3">
-									{/* User Avatar with Dropdown */}
-									<div className="relative group">
+						<div className="hidden xl:flex items-center">
+							{isLoading ? (
+								<Button
+									variant="ghost"
+									size="sm"
+									disabled
+									className="gap-2"
+								>
+									<Loader2 className="h-4 w-4 animate-spin" />
+									Loading...
+								</Button>
+							) : isAuthenticated && user ? (
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
 										<Button
 											variant="ghost"
 											size="sm"
-											className="flex items-center gap-2 rounded-full"
+											className="gap-2 h-10"
 										>
-											<div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-												<UserIcon className="h-4 w-4 text-primary" />
+											<Avatar className="h-8 w-8">
+												<AvatarImage
+													src={
+														user.avatar || undefined
+													}
+													alt={getFullName()}
+												/>
+												<AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+													{getUserInitials()}
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex flex-col items-start">
+												<span className="text-sm font-medium">
+													{user.firstName}
+												</span>
+												{user.role === "admin" && (
+													<Badge
+														variant="secondary"
+														className="h-4 text-[10px] px-1"
+													>
+														Admin
+													</Badge>
+												)}
 											</div>
-											<span className="text-sm font-medium">
-												{user?.name?.split(" ")[0]}
-											</span>
 										</Button>
-
-										{/* Dropdown Menu */}
-										<div className="absolute right-0 top-full mt-2 w-48 rounded-md border bg-popover p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 shadow-lg">
-											<div className="flex flex-col space-y-1">
+									</DropdownMenuTrigger>
+									<DropdownMenuContent
+										className="w-64"
+										align="end"
+									>
+										<DropdownMenuLabel>
+											<div className="flex justify-start items-center gap-2">
+												<div>
+													<Avatar className="h-8 w-8">
+														<AvatarImage
+															src={
+																user.avatar ||
+																undefined
+															}
+															alt={getFullName()}
+														/>
+														<AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+															{getUserInitials()}
+														</AvatarFallback>
+													</Avatar>
+												</div>
+												<div>
+													<div className="flex items-center gap-2">
+														<p className="text-sm font-medium">
+															{getFullName()}
+														</p>
+														{user.emailVerified ? (
+															<CheckCircle2 className="h-4 w-4 text-green-500" />
+														) : (
+															<AlertCircle className="h-4 w-4 text-yellow-500" />
+														)}
+													</div>
+													<p className="text-xs text-muted-foreground font-normal">
+														{user.email}
+													</p>
+													{!user.emailVerified && (
+														<Badge
+															variant="outline"
+															className="w-fit text-yellow-600 border-yellow-600"
+														>
+															Email not verified
+														</Badge>
+													)}
+												</div>
+											</div>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuGroup>
+											<DropdownMenuItem asChild>
 												<Link
 													href="/dashboard"
-													className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent"
+													className="cursor-pointer"
 												>
-													<User className="h-4 w-4" />
-													Dashboard
+													<LayoutDashboard className="mr-2 h-4 w-4" />
+													<span>Dashboard</span>
 												</Link>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
 												<Link
 													href="/profile"
-													className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent"
+													className="cursor-pointer"
 												>
-													<User className="h-4 w-4" />
-													Profile
+													<User className="mr-2 h-4 w-4" />
+													<span>Profile</span>
 												</Link>
-												<button
-													onClick={logout}
-													className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent text-destructive"
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<Link
+													href="/settings"
+													className="cursor-pointer"
 												>
-													<LogOut className="h-4 w-4" />
-													Sign Out
-												</button>
-											</div>
-										</div>
-									</div>
-								</div>
+													<Settings className="mr-2 h-4 w-4" />
+													<span>Settings</span>
+												</Link>
+											</DropdownMenuItem>
+										</DropdownMenuGroup>
+										{user.role === "admin" && (
+											<>
+												<DropdownMenuSeparator />
+												<DropdownMenuGroup>
+													<DropdownMenuLabel className="text-xs text-muted-foreground">
+														Admin
+													</DropdownMenuLabel>
+													<DropdownMenuItem asChild>
+														<Link
+															href="/admin/templates"
+															className="cursor-pointer"
+														>
+															<Shield className="mr-2 h-4 w-4" />
+															<span>
+																Manage Templates
+															</span>
+														</Link>
+													</DropdownMenuItem>
+												</DropdownMenuGroup>
+											</>
+										)}
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											onClick={handleLogout}
+											className="cursor-pointer text-destructive focus:text-destructive"
+										>
+											<LogOut className="mr-2 h-4 w-4" />
+											<span>Sign Out</span>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							) : (
 								<div className="flex items-center gap-2">
 									<Button asChild variant="ghost" size="sm">
@@ -164,9 +324,13 @@ export function HeaderComponent() {
 					{/* Mobile Menu */}
 					<div className="flex xl:hidden items-center gap-2">
 						{/* Create Resume Button - Mobile */}
-						<Button asChild size="sm" className="mr-2">
-							<Link href="/create-resume">Create</Link>
-						</Button>
+						{isAuthenticated && (
+							<Button asChild size="sm" className="mr-2">
+								<Link href="/create-resume">
+									<FileText className="h-4 w-4" />
+								</Link>
+							</Button>
+						)}
 
 						<Sheet open={isOpen} onOpenChange={setIsOpen}>
 							<SheetTrigger asChild>
@@ -197,22 +361,60 @@ export function HeaderComponent() {
 									</div>
 
 									{/* User Info in Mobile */}
-									{isAuthenticated && (
-										<div className="border-b py-4">
-											<div className="flex items-center gap-3 px-3">
-												<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-													<UserIcon className="h-5 w-5 text-primary" />
-												</div>
-												<div className="flex-1 min-w-0">
-													<p className="text-sm font-medium truncate">
-														{user?.name}
-													</p>
-													<p className="text-xs text-muted-foreground truncate">
-														{user?.email}
-													</p>
+									{isLoading ? (
+										<div className="border-b py-4 px-3">
+											<div className="flex items-center gap-3">
+												<div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+												<div className="flex-1 space-y-2">
+													<div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+													<div className="h-3 bg-muted rounded animate-pulse w-1/2" />
 												</div>
 											</div>
 										</div>
+									) : (
+										isAuthenticated &&
+										user && (
+											<div className="border-b py-4">
+												<div className="flex items-center gap-3 px-3">
+													<Avatar className="h-10 w-10">
+														<AvatarImage
+															src={
+																user.avatar ||
+																undefined
+															}
+															alt={getFullName()}
+														/>
+														<AvatarFallback className="bg-primary/10 text-primary font-semibold">
+															{getUserInitials()}
+														</AvatarFallback>
+													</Avatar>
+													<div className="flex-1 min-w-0">
+														<div className="flex items-center gap-2">
+															<p className="text-sm font-medium truncate">
+																{getFullName()}
+															</p>
+															{user.emailVerified ? (
+																<CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+															) : (
+																<AlertCircle className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+															)}
+														</div>
+														<p className="text-xs text-muted-foreground truncate">
+															{user.email}
+														</p>
+														{user.role ===
+															"admin" && (
+																<Badge
+																	variant="secondary"
+																	className="mt-1 h-4 text-[10px] w-fit"
+																>
+																	Admin
+																</Badge>
+															)}
+													</div>
+												</div>
+											</div>
+										)
 									)}
 
 									{/* Mobile Navigation */}
@@ -253,8 +455,8 @@ export function HeaderComponent() {
 									</nav>
 
 									{/* Mobile Auth Buttons */}
-									<div className="border-t pt-6 space-y-3">
-										{isAuthenticated ? (
+									<div className="border-t pt-6 space-y-2">
+										{isAuthenticated && user ? (
 											<>
 												<Button
 													asChild
@@ -265,7 +467,7 @@ export function HeaderComponent() {
 													}
 												>
 													<Link href="/dashboard">
-														<User className="h-4 w-4" />
+														<LayoutDashboard className="h-4 w-4" />
 														Dashboard
 													</Link>
 												</Button>
@@ -283,23 +485,60 @@ export function HeaderComponent() {
 													</Link>
 												</Button>
 												<Button
+													asChild
 													variant="outline"
-													className="w-full justify-start gap-2 text-destructive"
-													onClick={() => {
-														logout();
-														setIsOpen(false);
-													}}
+													className="w-full justify-start gap-2"
+													onClick={() =>
+														setIsOpen(false)
+													}
 												>
-													<LogOut className="h-4 w-4" />
-													Sign Out
+													<Link href="/settings">
+														<Settings className="h-4 w-4" />
+														Settings
+													</Link>
 												</Button>
+												{user.role === "admin" && (
+													<>
+														<div className="py-2">
+															<p className="text-xs text-muted-foreground px-3">
+																Admin
+															</p>
+														</div>
+														<Button
+															asChild
+															variant="outline"
+															className="w-full justify-start gap-2"
+															onClick={() =>
+																setIsOpen(false)
+															}
+														>
+															<Link href="/admin/templates">
+																<Shield className="h-4 w-4" />
+																Manage Templates
+															</Link>
+														</Button>
+													</>
+												)}
+												<div className="pt-2">
+													<Button
+														variant="outline"
+														className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+														onClick={() => {
+															handleLogout();
+															setIsOpen(false);
+														}}
+													>
+														<LogOut className="h-4 w-4" />
+														Sign Out
+													</Button>
+												</div>
 											</>
 										) : (
 											<>
 												<Button
 													asChild
 													variant="outline"
-													className="w-full justify-start gap-2"
+													className="w-full justify-center gap-2"
 													onClick={() =>
 														setIsOpen(false)
 													}
@@ -317,7 +556,6 @@ export function HeaderComponent() {
 													}
 												>
 													<Link href="/auth/signup">
-														<User className="h-4 w-4" />
 														Sign Up
 													</Link>
 												</Button>
@@ -325,16 +563,22 @@ export function HeaderComponent() {
 										)}
 
 										{/* Mobile Create Resume Button */}
-										<Button
-											asChild
-											className="w-full justify-center gap-2 mt-4"
-											onClick={() => setIsOpen(false)}
-										>
-											<Link href="/create-resume">
-												<FileText className="h-4 w-4" />
-												Create Resume
-											</Link>
-										</Button>
+										{isAuthenticated && (
+											<div className="pt-2">
+												<Button
+													asChild
+													className="w-full justify-center gap-2"
+													onClick={() =>
+														setIsOpen(false)
+													}
+												>
+													<Link href="/create-resume">
+														<FileText className="h-4 w-4" />
+														Create Resume
+													</Link>
+												</Button>
+											</div>
+										)}
 									</div>
 								</div>
 							</SheetContent>

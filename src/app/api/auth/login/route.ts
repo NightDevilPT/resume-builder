@@ -1,3 +1,8 @@
+import {
+	generateTokens,
+	getCookieOptions,
+	getTokenMaxAge,
+} from "@/lib/services/jwt.service";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/services/prisma.service";
@@ -195,22 +200,46 @@ export async function POST(request: NextRequest) {
 			createdAt: user.createdAt,
 		};
 
-		// TODO: Create JWT token or session
-		// TODO: Set session cookie based on rememberMe flag
+		// Generate JWT tokens
+		const { accessToken, refreshToken } = generateTokens(
+			{
+				userId: user.id,
+				email: user.email,
+				role: user.role,
+			},
+			rememberMe
+		);
 
-		return NextResponse.json(
+		// Get token max ages based on rememberMe flag
+		const tokenMaxAge = getTokenMaxAge(rememberMe);
+
+		// Create response with user data
+		const response = NextResponse.json(
 			{
 				success: true,
 				data: {
 					user: userData,
 					message: "Login successful!",
-					// TODO: Add token when JWT is implemented
-					// token: jwtToken,
-					rememberMe,
+					accessToken, // Include in response for client-side storage if needed
 				},
 			},
 			{ status: 200 }
 		);
+
+		// Set HTTP-only cookies for tokens
+		response.cookies.set(
+			"accessToken",
+			accessToken,
+			getCookieOptions(tokenMaxAge.accessToken)
+		);
+
+		response.cookies.set(
+			"refreshToken",
+			refreshToken,
+			getCookieOptions(tokenMaxAge.refreshToken)
+		);
+
+		return response;
 	} catch (error) {
 		console.error("[LOGIN_ERROR]:", error);
 
@@ -242,4 +271,3 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
-
