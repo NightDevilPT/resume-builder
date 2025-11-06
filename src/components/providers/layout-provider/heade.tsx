@@ -151,10 +151,10 @@ export function HeaderComponent() {
 							) : (
 								<div className="flex items-center gap-2">
 									<Button asChild variant="ghost" size="sm">
-										<Link href="/login">Sign In</Link>
+										<Link href="/auth/login">Sign In</Link>
 									</Button>
 									<Button asChild size="sm">
-										<Link href="/signup">Sign Up</Link>
+										<Link href="/auth/signup">Sign Up</Link>
 									</Button>
 								</div>
 							)}
@@ -304,7 +304,7 @@ export function HeaderComponent() {
 														setIsOpen(false)
 													}
 												>
-													<Link href="/login">
+													<Link href="/auth/login">
 														<User className="h-4 w-4" />
 														Sign In
 													</Link>
@@ -316,7 +316,7 @@ export function HeaderComponent() {
 														setIsOpen(false)
 													}
 												>
-													<Link href="/signup">
+													<Link href="/auth/signup">
 														<User className="h-4 w-4" />
 														Sign Up
 													</Link>
