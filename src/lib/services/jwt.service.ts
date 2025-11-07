@@ -122,8 +122,36 @@ export function verifyToken(
 }
 
 /**
+ * Safely verify token without throwing errors
+ * Returns null for expired/invalid tokens instead of throwing
+ * Used in auth helpers and middleware
+ * @param token - The JWT token to verify
+ * @param type - Token type to verify ("access" or "refresh")
+ * @returns Decoded token payload or null if invalid/expired
+ */
+export function safeVerifyToken(
+	token: string,
+	type: "access" | "refresh" = "access"
+): DecodedToken | null {
+	try {
+		const secret =
+			type === "access" ? ACCESS_TOKEN_SECRET : REFRESH_TOKEN_SECRET;
+		const decoded = jwt.verify(token, secret) as DecodedToken;
+
+		if (decoded.type !== type) {
+			return null;
+		}
+
+		return decoded;
+	} catch (error) {
+		// Silently return null for expired or invalid tokens
+		return null;
+	}
+}
+
+/**
  * Generate cookie options for token storage
- * @param maxAge - Cookie expiration in milliseconds
+ * @param maxAge - Cookie expiration in seconds (not milliseconds!)
  * @returns Cookie configuration object
  */
 export function getCookieOptions(maxAge?: number) {
@@ -132,7 +160,7 @@ export function getCookieOptions(maxAge?: number) {
 		secure: process.env.NODE_ENV === "production", // HTTPS only in production
 		sameSite: "lax" as const, // CSRF protection
 		path: "/", // Cookie available everywhere
-		maxAge: maxAge || 15 * 60 * 1000, // Default 15 minutes (in milliseconds)
+		maxAge: maxAge || 15 * 60, // Default 15 minutes (in seconds)
 	};
 }
 
@@ -162,14 +190,14 @@ export function parseExpiryToMs(expiry: string): number {
 /**
  * Get cookie max age for tokens
  * @param rememberMe - Whether user wants to stay logged in
- * @returns Object with access and refresh token max ages (in milliseconds)
+ * @returns Object with access and refresh token max ages (in seconds for cookie usage)
  */
 export function getTokenMaxAge(rememberMe: boolean = false) {
 	return {
-		accessToken: parseExpiryToMs(ACCESS_TOKEN_EXPIRY),
-		refreshToken: parseExpiryToMs(
-			rememberMe ? REFRESH_TOKEN_EXPIRY_REMEMBER_ME : REFRESH_TOKEN_EXPIRY
-		),
+		accessToken: Math.floor(parseExpiryToMs(ACCESS_TOKEN_EXPIRY) / 1000), // Convert ms to seconds
+		refreshToken: Math.floor(
+			parseExpiryToMs(rememberMe ? REFRESH_TOKEN_EXPIRY_REMEMBER_ME : REFRESH_TOKEN_EXPIRY) / 1000
+		), // Convert ms to seconds
 	};
 }
 
@@ -211,15 +239,13 @@ export async function getServerSession(): Promise<ServerSession | null> {
 		const accessToken = cookieStore.get("accessToken")?.value;
 
 		if (!accessToken) {
-			console.log("[SERVER_AUTH] No access token found");
 			return null;
 		}
 
-		// Verify the token
-		const decoded: DecodedToken = verifyToken(accessToken, "access");
+		// Verify the token safely (returns null for expired/invalid tokens)
+		const decoded = safeVerifyToken(accessToken, "access");
 
 		if (!decoded || !decoded.userId) {
-			console.log("[SERVER_AUTH] Invalid token payload");
 			return null;
 		}
 
@@ -232,6 +258,7 @@ export async function getServerSession(): Promise<ServerSession | null> {
 			accessToken,
 		};
 	} catch (error) {
+		// Log only unexpected errors
 		console.error("[SERVER_AUTH_ERROR]:", error);
 		return null;
 	}

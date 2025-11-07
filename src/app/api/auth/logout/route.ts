@@ -25,28 +25,15 @@ export async function POST(request: NextRequest) {
 			{ status: 200 }
 		);
 
-		// Clear authentication cookies
-		response.cookies.set("accessToken", "", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			path: "/",
-			maxAge: 0, // Expire immediately
-		});
-
-		response.cookies.set("refreshToken", "", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			path: "/",
-			maxAge: 0, // Expire immediately
-		});
+		// Delete authentication cookies completely
+		response.cookies.delete("accessToken");
+		response.cookies.delete("refreshToken");
 
 		return response;
 	} catch (error) {
 		console.error("[LOGOUT_ERROR]:", error);
 
-		// Even if there's an error, still clear the cookies
+		// Even if there's an error, still delete the cookies
 		const response = NextResponse.json(
 			{
 				success: true,
@@ -57,22 +44,9 @@ export async function POST(request: NextRequest) {
 			{ status: 200 }
 		);
 
-		// Clear cookies
-		response.cookies.set("accessToken", "", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			path: "/",
-			maxAge: 0,
-		});
-
-		response.cookies.set("refreshToken", "", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			path: "/",
-			maxAge: 0,
-		});
+		// Delete cookies completely
+		response.cookies.delete("accessToken");
+		response.cookies.delete("refreshToken");
 
 		return response;
 	}

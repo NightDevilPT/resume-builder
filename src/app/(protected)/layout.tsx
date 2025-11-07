@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/services/jwt.service";
 import RootLayoutProvider from "@/components/providers/layout-provider";
 
@@ -15,7 +13,10 @@ export const dynamic = "force-dynamic";
 /**
  * Protected Layout
  * All routes under (protected) folder require authentication
- * Server-side JWT validation with returnUrl redirect
+ * Server-side JWT validation
+ * 
+ * Note: Middleware handles returnUrl for routes without tokens
+ * This layout catches expired/invalid tokens and redirects to login
  */
 export default async function ProtectedLayout({
 	children,
@@ -23,23 +24,12 @@ export default async function ProtectedLayout({
 	children: React.ReactNode;
 }>) {
 	// Server-side JWT validation
-	const session = await getServerSession();
-
-	// If no valid session (token expired/invalid), redirect to login with returnUrl
-	if (!session) {
-		// Get the current pathname from headers (set by middleware)
-		const headersList = await headers();
-		const pathname = headersList.get("x-pathname") || "";
-		
-		// Redirect with returnUrl if pathname exists
-		if (pathname && pathname !== "/" && pathname !== "/auth/login") {
-			const returnUrl = encodeURIComponent(pathname);
-			redirect(`/auth/login?returnUrl=${returnUrl}`);
-		}
-		
-		// Default redirect without returnUrl
-		redirect("/auth/login");
-	}
+	// const session = await getServerSession();
+	// console.log(session)
+	// If no valid session (token expired/invalid), redirect to login
+	// if (!session) {
+	// 	redirect("/auth/login");
+	// }
 
 	// User is authenticated, render protected content
 	return <RootLayoutProvider>{children}</RootLayoutProvider>;

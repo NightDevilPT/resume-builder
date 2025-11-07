@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 	try {
 		// Get authenticated user from token
 		const authUser = getAuthUser(request);
-
+		
 		if (!authUser) {
 			return NextResponse.json(
 				{

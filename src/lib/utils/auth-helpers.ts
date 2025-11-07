@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { verifyToken, type DecodedToken } from "@/lib/services/jwt.service";
+import { safeVerifyToken, type DecodedToken } from "@/lib/services/jwt.service";
 
 /**
  * Authentication Helper Utilities
@@ -12,22 +12,17 @@ import { verifyToken, type DecodedToken } from "@/lib/services/jwt.service";
  * @returns Decoded token payload or null if not authenticated
  */
 export function getAuthUser(request: NextRequest): DecodedToken | null {
-	try {
-		// Get access token from cookies
-		const accessToken = request.cookies.get("accessToken")?.value;
+	// Get access token from cookies
+	const accessToken = request.cookies.get("accessToken")?.value;
 
-		if (!accessToken) {
-			return null;
-		}
-
-		// Verify and decode the token
-		const decoded = verifyToken(accessToken, "access");
-
-		return decoded;
-	} catch (error) {
-		console.error("[GET_AUTH_USER_ERROR]:", error);
+	if (!accessToken) {
 		return null;
 	}
+
+	// Verify and decode the token safely (no errors thrown)
+	const decoded = safeVerifyToken(accessToken, "access");
+
+	return decoded;
 }
 
 /**
@@ -36,22 +31,17 @@ export function getAuthUser(request: NextRequest): DecodedToken | null {
  * @returns Decoded refresh token payload or null if not found
  */
 export function getRefreshToken(request: NextRequest): DecodedToken | null {
-	try {
-		// Get refresh token from cookies
-		const refreshToken = request.cookies.get("refreshToken")?.value;
+	// Get refresh token from cookies
+	const refreshToken = request.cookies.get("refreshToken")?.value;
 
-		if (!refreshToken) {
-			return null;
-		}
-
-		// Verify and decode the refresh token
-		const decoded = verifyToken(refreshToken, "refresh");
-
-		return decoded;
-	} catch (error) {
-		console.error("[GET_REFRESH_TOKEN_ERROR]:", error);
+	if (!refreshToken) {
 		return null;
 	}
+
+	// Verify and decode the refresh token safely (no errors thrown)
+	const decoded = safeVerifyToken(refreshToken, "refresh");
+
+	return decoded;
 }
 
 /**

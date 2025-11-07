@@ -227,16 +227,19 @@ export async function POST(request: NextRequest) {
 		);
 
 		// Set HTTP-only cookies for tokens
+		const accessCookieOptions = getCookieOptions(tokenMaxAge.accessToken);
+		const refreshCookieOptions = getCookieOptions(tokenMaxAge.refreshToken);
+
 		response.cookies.set(
 			"accessToken",
 			accessToken,
-			getCookieOptions(tokenMaxAge.accessToken)
+			accessCookieOptions
 		);
 
 		response.cookies.set(
 			"refreshToken",
 			refreshToken,
-			getCookieOptions(tokenMaxAge.refreshToken)
+			refreshCookieOptions
 		);
 
 		return response;

@@ -3,46 +3,27 @@
 import {
 	Search,
 	FileText,
-	Sparkles,
-	Type,
 	TrendingUp,
-	Star,
-	Filter,
 	DollarSign,
-	Clock,
 	X,
 	Check,
 	LayoutGrid,
-	List
+	List,
 } from "lucide-react";
+import {
+	TEMPLATE_CATEGORIES,
+	TEMPLATE_PRICE_FILTERS,
+	TEMPLATE_SORT_OPTIONS,
+} from "@/constants/template-filters";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const CATEGORIES = [
-	{ id: "all", label: "All Templates", icon: FileText, count: 0 },
-	{ id: "modern", label: "Modern", icon: Sparkles, count: 0 },
-	{ id: "classic", label: "Classic", icon: Type, count: 0 },
-	{ id: "creative", label: "Creative", icon: TrendingUp, count: 0 },
-	{ id: "professional", label: "Professional", icon: Star, count: 0 },
-	{ id: "minimal", label: "Minimal", icon: Filter, count: 0 },
-	{ id: "bold", label: "Bold", icon: TrendingUp, count: 0 },
-];
-
-const PRICE_FILTERS = [
-	{ id: "all", label: "All Prices", desc: "Show everything" },
-	{ id: "free", label: "Free", desc: "No cost templates" },
-	{ id: "paid", label: "Premium", desc: "Paid templates" },
-];
-
-const SORT_OPTIONS = [
-	{ id: "createdAt-desc", label: "Newest", desc: "Latest additions" },
-	{ id: "rating-desc", label: "Top Rated", desc: "Highest ratings" },
-	{ id: "usageCount-desc", label: "Popular", desc: "Most used" },
-	{ id: "name-asc", label: "A-Z", desc: "Alphabetical" },
-];
+const CATEGORIES = TEMPLATE_CATEGORIES;
+const PRICE_FILTERS = TEMPLATE_PRICE_FILTERS;
+const SORT_OPTIONS = TEMPLATE_SORT_OPTIONS;
 
 interface TemplatesFilterProps {
 	searchQuery: string;
@@ -266,7 +247,7 @@ export function TemplatesFilter({
 							View Layout
 						</span>
 					</div>
-					
+
 					{/* View Mode Toggle */}
 					<div className="grid grid-cols-2 gap-2">
 						<button
@@ -278,8 +259,20 @@ export function TemplatesFilter({
 									: "bg-accent/20 border-transparent hover:bg-accent/40 hover:border-border"
 							)}
 						>
-							<LayoutGrid className={cn("h-5 w-5", viewMode === "card" && "text-primary-foreground")} />
-							<span className={cn("text-xs font-bold", viewMode === "card" && "text-primary-foreground")}>
+							<LayoutGrid
+								className={cn(
+									"h-5 w-5",
+									viewMode === "card" &&
+										"text-primary-foreground"
+								)}
+							/>
+							<span
+								className={cn(
+									"text-xs font-bold",
+									viewMode === "card" &&
+										"text-primary-foreground"
+								)}
+							>
 								Card
 							</span>
 							{viewMode === "card" && (
@@ -288,7 +281,7 @@ export function TemplatesFilter({
 								</div>
 							)}
 						</button>
-						
+
 						<button
 							onClick={() => setViewMode("list")}
 							className={cn(
@@ -298,8 +291,20 @@ export function TemplatesFilter({
 									: "bg-accent/20 border-transparent hover:bg-accent/40 hover:border-border"
 							)}
 						>
-							<List className={cn("h-5 w-5", viewMode === "list" && "text-primary-foreground")} />
-							<span className={cn("text-xs font-bold", viewMode === "list" && "text-primary-foreground")}>
+							<List
+								className={cn(
+									"h-5 w-5",
+									viewMode === "list" &&
+										"text-primary-foreground"
+								)}
+							/>
+							<span
+								className={cn(
+									"text-xs font-bold",
+									viewMode === "list" &&
+										"text-primary-foreground"
+								)}
+							>
 								List
 							</span>
 							{viewMode === "list" && (
