@@ -173,3 +173,227 @@ export function getTokenMaxAge(rememberMe: boolean = false) {
 	};
 }
 
+// ============================================================================
+// SERVER-SIDE AUTHENTICATION UTILITIES
+// ============================================================================
+
+import { cookies } from "next/headers";
+import type { User } from "@/interfaces/user";
+
+/**
+ * Server Session Interface
+ */
+export interface ServerSession {
+	user: {
+		id: string;
+		email: string;
+		role: string;
+	};
+	accessToken: string;
+}
+
+/**
+ * Get Server Session
+ * Validates JWT token from cookies and returns user session
+ * 
+ * @returns ServerSession if authenticated, null otherwise
+ * 
+ * @example
+ * // In Server Component or Server Action
+ * const session = await getServerSession();
+ * if (!session) {
+ *   redirect('/auth/login');
+ * }
+ */
+export async function getServerSession(): Promise<ServerSession | null> {
+	try {
+		const cookieStore = await cookies();
+		const accessToken = cookieStore.get("accessToken")?.value;
+
+		if (!accessToken) {
+			console.log("[SERVER_AUTH] No access token found");
+			return null;
+		}
+
+		// Verify the token
+		const decoded: DecodedToken = verifyToken(accessToken, "access");
+
+		if (!decoded || !decoded.userId) {
+			console.log("[SERVER_AUTH] Invalid token payload");
+			return null;
+		}
+
+		return {
+			user: {
+				id: decoded.userId,
+				email: decoded.email,
+				role: decoded.role,
+			},
+			accessToken,
+		};
+	} catch (error) {
+		console.error("[SERVER_AUTH_ERROR]:", error);
+		return null;
+	}
+}
+
+/**
+ * Get User from Server Session
+ * Fetches complete user data from database using session
+ * 
+ * @returns User object if authenticated, null otherwise
+ * 
+ * @example
+ * const user = await getServerUser();
+ * if (!user) {
+ *   redirect('/auth/login');
+ * }
+ */
+export async function getServerUser(): Promise<User | null> {
+	const session = await getServerSession();
+
+	if (!session) {
+		return null;
+	}
+
+	try {
+		// Import prisma dynamically to avoid edge runtime issues
+		const { prisma } = await import("@/lib/services/prisma.service");
+
+		const dbUser = await prisma.user.findUnique({
+			where: { id: session.user.id },
+			select: {
+				id: true,
+				firstName: true,
+				lastName: true,
+				userName: true,
+				email: true,
+				avatar: true,
+				bio: true,
+				phone: true,
+				emailVerified: true,
+				isActive: true,
+				isBanned: true,
+				role: true,
+				lastLoginAt: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+		});
+
+		if (!dbUser) {
+			console.log("[SERVER_AUTH] User not found in database");
+			return null;
+		}
+
+		if (dbUser.isBanned) {
+			console.log("[SERVER_AUTH] User is banned");
+			return null;
+		}
+
+		if (!dbUser.isActive) {
+			console.log("[SERVER_AUTH] User is inactive");
+			return null;
+		}
+
+		// Cast role to proper type
+		return {
+			...dbUser,
+			role: dbUser.role as "user" | "admin",
+		};
+	} catch (error) {
+		console.error("[GET_SERVER_USER_ERROR]:", error);
+		return null;
+	}
+}
+
+/**
+ * Require Server Session
+ * Throws error if no session found - use in Server Actions
+ * 
+ * @throws Error if not authenticated
+ * @returns ServerSession
+ * 
+ * @example
+ * // In Server Action
+ * export async function updateProfile(data: ProfileData) {
+ *   const session = await requireServerSession();
+ *   // session is guaranteed to exist here
+ * }
+ */
+export async function requireServerSession(): Promise<ServerSession> {
+	const session = await getServerSession();
+
+	if (!session) {
+		throw new Error("Unauthorized - Authentication required");
+	}
+
+	return session;
+}
+
+/**
+ * Require Server User
+ * Throws error if no user found - use in Server Actions
+ * 
+ * @throws Error if not authenticated or user not found
+ * @returns User
+ * 
+ * @example
+ * // In Server Action
+ * export async function deleteAccount() {
+ *   const user = await requireServerUser();
+ *   // user is guaranteed to exist here
+ * }
+ */
+export async function requireServerUser(): Promise<User> {
+	const user = await getServerUser();
+
+	if (!user) {
+		throw new Error("Unauthorized - User not found");
+	}
+
+	return user;
+}
+
+/**
+ * Check if user has required role
+ * 
+ * @param requiredRole - Required role to check
+ * @returns true if user has required role
+ * 
+ * @example
+ * const isAdmin = await hasRole('admin');
+ * if (!isAdmin) {
+ *   return { error: 'Admin access required' };
+ * }
+ */
+export async function hasRole(requiredRole: "user" | "admin"): Promise<boolean> {
+	const session = await getServerSession();
+
+	if (!session) {
+		return false;
+	}
+
+	if (requiredRole === "admin") {
+		return session.user.role === "admin";
+	}
+
+	return true; // All authenticated users have 'user' role
+}
+
+/**
+ * Get user ID from server session (shorthand)
+ * 
+ * @returns User ID if authenticated, null otherwise
+ * 
+ * @example
+ * const userId = await getUserId();
+ * if (!userId) {
+ *   return { error: 'Not authenticated' };
+ * }
+ */
+export async function getUserId(): Promise<string | null> {
+	const session = await getServerSession();
+	return session?.user.id || null;
+}
+

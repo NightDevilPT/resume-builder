@@ -19,10 +19,12 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { API_URLS } from "@/constants/api-urls";
+import { useSearchParams } from "next/navigation";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/services/api-client.service";
+import { useAuthContext } from "@/components/providers/auth-provider";
 
 interface LoginResponse {
 	user: {
@@ -43,6 +45,8 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const { refetch } = useAuthContext();
 	const [showPassword, setShowPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -82,16 +86,31 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 				description: `Welcome back, ${response.data?.user.firstName}!`,
 			});
 
+			// Fetch user data to update auth context
+			await refetch();
+
 			// Call onSuccess callback if provided
 			if (onSuccess) {
 				onSuccess();
 			}
 
-			// TODO: Store authentication token/session when implemented
-			// For now, redirect to dashboard/home
+			// Determine redirect URL
+			const returnUrl = searchParams.get("returnUrl");
+			let redirectTo = "/"; // Default redirect
+
+			// If returnUrl exists and is valid (not auth routes), use it
+			if (returnUrl) {
+				// Prevent redirect to auth pages
+				const isAuthRoute = returnUrl.startsWith("/auth");
+				if (!isAuthRoute) {
+					redirectTo = returnUrl;
+				}
+			}
+
+			// Redirect after a short delay
 			setTimeout(() => {
-				router.push("/");
-			}, 1000);
+				router.push(redirectTo);
+			}, 500);
 		} catch (error) {
 			console.error("[LOGIN_ERROR]:", error);
 

@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { HeaderComponent } from "./heade";
+import { HeaderComponent } from "./header";
 import { Toaster } from "@/components/ui/sonner";
 
 const RootLayoutProvider = ({ children }: { children: ReactNode }) => {

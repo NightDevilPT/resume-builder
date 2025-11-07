@@ -61,7 +61,7 @@ export function useAuth() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, []);
+	}, []); // No dependencies - function is stable
 
 	/**
 	 * Refetch user data manually
@@ -94,10 +94,11 @@ export function useAuth() {
 		setUser((prev) => (prev ? { ...prev, ...updatedData } : null));
 	}, []);
 
-	// Fetch user on mount
+	// Fetch user on mount only once
 	useEffect(() => {
 		fetchUser();
-	}, [fetchUser]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Empty dependency array - only run once on mount
 
 	return {
 		user,

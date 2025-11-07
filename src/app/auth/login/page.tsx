@@ -1,6 +1,8 @@
 import { Metadata } from "next";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Suspense } from "react";
 import { FieldDescription } from "@/components/ui/field";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import {
 	Sparkles,
@@ -27,7 +29,15 @@ export default function LoginPage() {
 				{/* Centered Form with ScrollArea */}
 				<div className="flex flex-1 items-center justify-center">
 					<ScrollArea className="h-[calc(100vh-8rem)] lg:h-auto">
-						<LoginForm />
+						<Suspense
+							fallback={
+								<div className="flex items-center justify-center min-h-[400px]">
+									<Loader2 className="h-8 w-8 animate-spin text-primary" />
+								</div>
+							}
+						>
+							<LoginForm />
+						</Suspense>
 
 						{/* Terms & Conditions */}
 						<FieldDescription className="text-center mt-6 px-2">

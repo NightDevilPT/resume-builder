@@ -46,6 +46,22 @@ alwaysApply: true
 - **PREFER** functional components over class components
 - **USE** modern React patterns (hooks, context, composition)
 
+### 4. AI Assistant Behavior
+- **NEVER** create extra files just to provide explanations or documentation
+- **ALWAYS** provide explanations, guides, and documentation directly in conversation text
+- **ONLY** create files when they are functional parts of the application (components, utils, configs, etc.)
+- **AVOID** creating README files, explanation markdown files, or documentation files unless explicitly requested by the user
+- **NEVER** add package installation commands in MDX/documentation files - always install packages directly using terminal commands
+- **Examples:**
+  - ❌ Creating `EXPLANATION.md` to explain code changes
+  - ❌ Creating `GUIDE.md` to document a feature
+  - ❌ Creating `NOTES.txt` to list implementation details
+  - ❌ Adding `npm install package` commands in MDX files
+  - ✅ Before installing package first ask should we install package
+  - ✅ Explaining code changes directly in the conversation
+  - ✅ Providing implementation guides in the chat response
+  - ✅ Creating actual application files (components, services, utilities)
+
 ---
 
 ## 🏗️ Project Structure
