@@ -3,6 +3,7 @@
 import { Eye } from "lucide-react";
 import { ResumeToolbar } from "./ResumeToolbar";
 import { useState, useRef, useEffect } from "react";
+import { TemplateConfig } from "@/interfaces/templates";
 import { defaultTemplateConfig } from "@/constants/default-template";
 import { useResume } from "@/components/providers/resume-form-provider";
 import { TemplatePreview } from "@/components/pages/resume-layout-page/components/TemplatePreview";
@@ -21,6 +22,14 @@ export function ResumePreview() {
 
 	// Use fetched template config or fall back to default template
 	const selectedTemplate = templateConfig || defaultTemplateConfig;
+	const [previewConfig, setPreviewConfig] =
+		useState<TemplateConfig>(selectedTemplate);
+
+	useEffect(() => {
+		setPreviewConfig(selectedTemplate);
+		setZoom(100);
+		setPosition({ x: 0, y: 0 });
+	}, [selectedTemplate]);
 
 	// Zoom handlers
 	const handleZoomIn = () => {
@@ -34,6 +43,30 @@ export function ResumePreview() {
 	const handleResetZoom = () => {
 		setZoom(100);
 		setPosition({ x: 0, y: 0 });
+	};
+
+	const handleTemplateUpdate = (updates: Partial<TemplateConfig>) => {
+		setPreviewConfig((prev) => {
+			if (!prev) {
+				return selectedTemplate;
+			}
+			return {
+				...prev,
+				...updates,
+				colors: updates.colors
+					? { ...prev.colors, ...updates.colors }
+					: prev.colors,
+				typography: updates.typography
+					? { ...prev.typography, ...updates.typography }
+					: prev.typography,
+				spacing: updates.spacing
+					? { ...prev.spacing, ...updates.spacing }
+					: prev.spacing,
+				borders: updates.borders
+					? { ...prev.borders, ...updates.borders }
+					: prev.borders,
+			};
+		});
 	};
 
 	// Drag handlers - always enabled
@@ -95,6 +128,9 @@ export function ResumePreview() {
 					onZoomOut={handleZoomOut}
 					onResetZoom={handleResetZoom}
 					currentZoom={zoom}
+					permissions={templateConfig?.permissions}
+					currentConfig={previewConfig}
+					onUpdateConfig={handleTemplateUpdate}
 				/>
 			</div>
 
@@ -124,7 +160,7 @@ export function ResumePreview() {
 				>
 					<div className="p-6">
 						<TemplatePreview
-							config={selectedTemplate}
+							config={previewConfig}
 							resumeData={resumeData}
 						/>
 					</div>
