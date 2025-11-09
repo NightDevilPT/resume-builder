@@ -13,30 +13,28 @@ import {
 	RotateCcw,
 	Download,
 } from "lucide-react";
-import {
-	useTemplate,
-	templateActions,
-} from "@/components/providers/template-provider";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { PricingStep } from "./steps/PricingStep";
 import { Button } from "@/components/ui/button";
-import { useState, useRef, useEffect, useMemo } from "react";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { TemplateConfig } from "@/interfaces/templates";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { PermissionsStep } from "./steps/PermissionsStep";
 import { TypographyStep } from "./steps/TypographyStep";
+import { exportResumeToPDF } from "@/lib/utils/pdf-export";
 import { ColorSchemeStep } from "./steps/ColorSchemeStep";
 import { LayoutConfigStep } from "./steps/LayoutConfigStep";
 import { SectionConfigStep } from "./steps/SectionConfigStep";
-import { PermissionsStep } from "./steps/PermissionsStep";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { TemplatePreview } from "./components/TemplatePreview";
 import { defaultTemplateConfig } from "@/constants/default-template";
+import { useTemplate } from "@/components/providers/template-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { exportResumeToPDF } from "@/lib/utils/pdf-export";
 
 export default function AdminTemplateCreator() {
-	const { dispatch, isSaving, saveTemplate, updateTemplateById } = useTemplate();
+	const { dispatch, isSaving, saveTemplate, updateTemplateById } =
+		useTemplate();
 	const [activeTab, setActiveTab] = useState("basic");
 	const [previewMode, setPreviewMode] = useState(false);
 
@@ -48,7 +46,9 @@ export default function AdminTemplateCreator() {
 	const previewContainerRef = useRef<HTMLDivElement>(null);
 
 	// Track current template ID (null if creating new)
-	const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
+	const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(
+		null
+	);
 
 	// Local template state (will be saved to provider on submit)
 	const [templateConfig, setTemplateConfig] = useState<
@@ -62,7 +62,7 @@ export default function AdminTemplateCreator() {
 				...prev,
 				[section]:
 					typeof currentSection === "object" &&
-						currentSection !== null
+					currentSection !== null
 						? { ...currentSection, ...data }
 						: data,
 			};
@@ -259,7 +259,8 @@ export default function AdminTemplateCreator() {
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2">
 							<h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight truncate">
-								{currentTemplateId ? "Edit" : "Create"} Resume Template
+								{currentTemplateId ? "Edit" : "Create"} Resume
+								Template
 							</h1>
 							{currentTemplateId && (
 								<span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
@@ -306,26 +307,29 @@ export default function AdminTemplateCreator() {
 					<ScrollArea className="flex-1 overflow-hidden">
 						<Tabs value={activeTab} onValueChange={setActiveTab}>
 							<div className="px-6">
-							<TabsContent value="basic" className="mt-0">
-								<BasicInfoStep
-									config={templateConfig}
-									updateConfig={updateConfig}
-								/>
-							</TabsContent>
+								<TabsContent value="basic" className="mt-0">
+									<BasicInfoStep
+										config={templateConfig}
+										updateConfig={updateConfig}
+									/>
+								</TabsContent>
 
-							<TabsContent value="permissions" className="mt-0">
-								<PermissionsStep
-									config={templateConfig}
-									updateConfig={updateConfig}
-								/>
-							</TabsContent>
+								<TabsContent
+									value="permissions"
+									className="mt-0"
+								>
+									<PermissionsStep
+										config={templateConfig}
+										updateConfig={updateConfig}
+									/>
+								</TabsContent>
 
-							<TabsContent value="layout" className="mt-0">
-								<LayoutConfigStep
-									config={templateConfig}
-									updateConfig={updateConfig}
-								/>
-							</TabsContent>
+								<TabsContent value="layout" className="mt-0">
+									<LayoutConfigStep
+										config={templateConfig}
+										updateConfig={updateConfig}
+									/>
+								</TabsContent>
 
 								<TabsContent value="colors" className="mt-0">
 									<ColorSchemeStep
@@ -384,7 +388,9 @@ export default function AdminTemplateCreator() {
 								) : (
 									<Save className="h-4 w-4" />
 								)}
-								{currentTemplateId ? "Update Draft" : "Save Draft"}
+								{currentTemplateId
+									? "Update Draft"
+									: "Save Draft"}
 							</Button>
 
 							<Button
@@ -397,7 +403,9 @@ export default function AdminTemplateCreator() {
 								) : (
 									<Save className="h-4 w-4" />
 								)}
-								{currentTemplateId ? "Update & Publish" : "Publish"}
+								{currentTemplateId
+									? "Update & Publish"
+									: "Publish"}
 							</Button>
 						</div>
 					</div>
@@ -455,9 +463,12 @@ export default function AdminTemplateCreator() {
 								<Button
 									size="sm"
 									onClick={() => {
-										exportResumeToPDF(templateConfig.name || "resume.pdf");
+										exportResumeToPDF(
+											templateConfig.name || "resume.pdf"
+										);
 										toast.success("Print dialog opened!", {
-											description: "IMPORTANT: Click 'More settings' and uncheck 'Headers and footers' to remove date/title from PDF",
+											description:
+												"IMPORTANT: Click 'More settings' and uncheck 'Headers and footers' to remove date/title from PDF",
 											duration: 10000,
 										});
 									}}
@@ -485,19 +496,18 @@ export default function AdminTemplateCreator() {
 						<div
 							className="absolute inset-0 flex items-center justify-center"
 							style={{
-								transform: `translate(${position.x}px, ${position.y
-									}px) scale(${zoom / 100})`,
+								transform: `translate(${position.x}px, ${
+									position.y
+								}px) scale(${zoom / 100})`,
 								transformOrigin: "center center",
 								transition: isDraggingActive
 									? "none"
 									: "transform 0.2s ease-out",
 							}}
 						>
-						<div className="p-6">
-							<TemplatePreview
-								config={memoizedConfig}
-							/>
-						</div>
+							<div className="p-6">
+								<TemplatePreview config={memoizedConfig} />
+							</div>
 						</div>
 					</div>
 				</Card>

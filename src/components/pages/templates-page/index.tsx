@@ -121,7 +121,7 @@ export default function TemplatesPage() {
 	};
 
 	const handleTemplateClick = (templateId: string) => {
-		router.push(`/templates/${templateId}/resume`);
+		router.push(`/templates/${templateId}`);
 	};
 
 	return (
