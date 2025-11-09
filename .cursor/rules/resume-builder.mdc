@@ -38,3 +38,7 @@ Component behavior:
 3. Components that render purely from props/context and re-render often should be memoized (`React.memo`, `useMemo`, etc.) to reduce unnecessary updates.
 4. Expensive computations or derived values should be memoized with `useMemo`; heavy callbacks should be memoized with `useCallback`; wrap pure components with `React.memo` when their props are stable.
 5. Use lucide icons for UI glyphs—avoid hard-coded inline SVGs so visual language stays consistent.
+
+## Routing Notes
+
+- Treat the root route `/` as the dashboard entry point when adding or updating navigation or redirects.

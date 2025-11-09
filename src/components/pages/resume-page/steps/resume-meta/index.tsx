@@ -21,6 +21,7 @@ import {
 	resumeMetaSchema,
 	type ResumeMetaFormValues,
 } from "@/lib/validations/resume.validations";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,35 @@ export function ResumeMetaPage() {
 			description: resumeData.description || "",
 		},
 	});
+
+	type NormalizedMetaValues = { name: string; description: string };
+
+	const lastValuesRef = useRef<NormalizedMetaValues>({
+		name: resumeData.name || "",
+		description: resumeData.description || "",
+	});
+
+	useEffect(() => {
+		const subscription = form.watch((value) => {
+			const normalized: NormalizedMetaValues = {
+				name: value?.name || "",
+				description: value?.description || "",
+			};
+
+			if (
+				normalized.name !== lastValuesRef.current.name ||
+				normalized.description !== lastValuesRef.current.description
+			) {
+				lastValuesRef.current = normalized;
+				dispatch({
+					type: "UPDATE_RESUME_META",
+					payload: normalized,
+				});
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	}, [dispatch, form]);
 
 	const onSubmit = (data: ResumeMetaFormValues) => {
 		dispatch({

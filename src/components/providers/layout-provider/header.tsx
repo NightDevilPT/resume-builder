@@ -251,7 +251,7 @@ export function HeaderComponent() {
 										<DropdownMenuGroup>
 											<DropdownMenuItem asChild>
 												<Link
-													href="/dashboard"
+													href="/"
 													className="cursor-pointer"
 												>
 													<LayoutDashboard className="mr-2 h-4 w-4" />
@@ -466,7 +466,7 @@ export function HeaderComponent() {
 														setIsOpen(false)
 													}
 												>
-													<Link href="/dashboard">
+													<Link href="/">
 														<LayoutDashboard className="h-4 w-4" />
 														Dashboard
 													</Link>

@@ -21,6 +21,7 @@ import {
 	personalInfoSchema,
 	type PersonalInfoFormValues,
 } from "@/lib/validations/personal-info.validations";
+import { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,6 +48,39 @@ export function PersonalInfoPage() {
 		},
 	});
 
+	const lastSerializedValuesRef = useRef<string>(
+		JSON.stringify(resumeData.personalInfo)
+	);
+
+	useEffect(() => {
+		const subscription = form.watch((value) => {
+			const normalized = {
+				fullName: value?.fullName || "",
+				email: value?.email || "",
+				phone: value?.phone || "",
+				location: value?.location || "",
+				website: value?.website || "",
+				links: (value?.links || []).map((link) => ({
+					label: link?.label || "",
+					url: link?.url || "",
+				})),
+				summary: value?.summary || "",
+			};
+
+			const serialized = JSON.stringify(normalized);
+
+			if (serialized !== lastSerializedValuesRef.current) {
+				lastSerializedValuesRef.current = serialized;
+				dispatch({
+					type: "UPDATE_PERSONAL_INFO",
+					payload: normalized,
+				});
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	}, [dispatch, form]);
+
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,
 		name: "links",
@@ -55,7 +89,13 @@ export function PersonalInfoPage() {
 	const onSubmit = (data: PersonalInfoFormValues) => {
 		dispatch({
 			type: "UPDATE_PERSONAL_INFO",
-			payload: data,
+			payload: {
+				...data,
+				links: data.links?.map((link) => ({
+					label: link.label,
+					url: link.url,
+				})) || [],
+			},
 		});
 		nextStep();
 	};

@@ -32,7 +32,13 @@ import { defaultTemplateConfig } from "@/constants/default-template";
 import { useTemplate } from "@/components/providers/template-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function AdminTemplateCreator() {
+interface AdminTemplateCreatorProps {
+	initialTemplate?: TemplateConfig | null;
+}
+
+export default function AdminTemplateCreator({
+	initialTemplate = null,
+}: AdminTemplateCreatorProps) {
 	const { dispatch, isSaving, saveTemplate, updateTemplateById } =
 		useTemplate();
 	const [activeTab, setActiveTab] = useState("basic");
@@ -47,13 +53,20 @@ export default function AdminTemplateCreator() {
 
 	// Track current template ID (null if creating new)
 	const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(
-		null
+		initialTemplate?.id ?? null
 	);
 
 	// Local template state (will be saved to provider on submit)
 	const [templateConfig, setTemplateConfig] = useState<
 		Partial<TemplateConfig>
-	>(defaultTemplateConfig);
+	>(initialTemplate ?? defaultTemplateConfig);
+
+	useEffect(() => {
+		if (initialTemplate) {
+			setTemplateConfig(initialTemplate);
+			setCurrentTemplateId(initialTemplate.id);
+		}
+	}, [initialTemplate]);
 
 	const updateConfig = (section: string, data: any) => {
 		setTemplateConfig((prev) => {
