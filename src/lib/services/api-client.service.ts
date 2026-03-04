@@ -103,7 +103,7 @@ class ApiClient {
 				);
 			}
 
-			return data;
+			return data as ApiResponse<T>;
 		} catch (error) {
 			if (error instanceof ApiError) {
 				throw error;
