@@ -1,9 +1,7 @@
-import React from 'react'
+// app/page.tsx
+"use client";
+import ResumeViewer from "@/components/context/resume-viewer";
 
-const Dashboard = () => {
-  return (
-    <div>Dashboard</div>
-  )
+export default function Home() {
+  return <ResumeViewer />;
 }
-
-export default Dashboard
