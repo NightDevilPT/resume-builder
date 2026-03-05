@@ -1,7 +1,8 @@
 // app/page.tsx
 "use client";
-import ResumeViewer from "@/components/context/resume-viewer";
+
+import { professionalResumeTemplate } from "@/components/context/resume-viewer/constants";
 
 export default function Home() {
-  return <ResumeViewer />;
+  return <div>Dashboard</div>;
 }

@@ -1,11 +1,9 @@
-import React from "react";
+import React from 'react'
 
 const ResumeViewer = () => {
-	return (
-		<div>
-			{/* Render the Resume section or component here to preview */}
-		</div>
-	);
-};
+  return (
+	<div>ResumeViewer</div>
+  )
+}
 
-export default ResumeViewer;
+export default ResumeViewer
