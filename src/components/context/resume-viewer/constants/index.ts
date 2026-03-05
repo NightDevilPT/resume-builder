@@ -1,4 +1,4 @@
-import { TemplateConfig } from "@/interfaces/templates/template.interface";
+import { TemplateConfig } from "@/components/templates/template.interface";
 
 export const professionalResumeTemplate: TemplateConfig = {
 	// Document metadata

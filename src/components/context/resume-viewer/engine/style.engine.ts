@@ -1,6 +1,6 @@
-import { TemplateConfig } from "@/interfaces/templates/template.interface";
-import { Style } from "@/interfaces/templates/style.interface";
-import { ContentBlock } from "@/interfaces/templates/content.interface";
+import { TemplateConfig } from "@/components/templates/template.interface";
+import { Style } from "@/components/templates/style.interface";
+import { ContentBlock } from "@/components/templates/content.interface";
 
 /**
  * Single engine to process a template config and generate a flat style dictionary
