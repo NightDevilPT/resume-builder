@@ -3,7 +3,7 @@
 import { API_URLS } from "@/constants/api-urls";
 import { useState, useEffect, useCallback } from "react";
 import type { User, MeResponse } from "@/interfaces/user";
-import { apiClient, ApiError } from "@/lib/services/api-client.service";
+import { apiClient, ApiError } from "@/lib/api-service/api-client.service";
 
 /**
  * useAuth Hook

@@ -1,5 +1,8 @@
 import { NextRequest } from "next/server";
-import { safeVerifyToken, type DecodedToken } from "@/lib/services/jwt.service";
+import {
+	safeVerifyToken,
+	type DecodedToken,
+} from "@/lib/jwt-service/jwt.service";
 
 /**
  * Authentication Helper Utilities
@@ -94,4 +97,3 @@ export function requireRole(request: NextRequest, role: string): DecodedToken {
 
 	return user;
 }
-

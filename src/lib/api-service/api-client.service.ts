@@ -3,7 +3,7 @@
  * Centralized HTTP client for making API requests
  */
 
-import { ApiResponse } from "@/interfaces/api-response.interface";
+import { ApiResponse } from "@/lib/api-service/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
